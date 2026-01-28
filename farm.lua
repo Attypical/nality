@@ -6,31 +6,12 @@ if game.PlaceId == 4588604953 then
 	game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Play"):InvokeServer("play", "Casual", nil, 1)
 end
 
+wait(2)
+
 local Players = game:GetService("Players")
 local localplr = Players.LocalPlayer
 
 local playerGui = localplr:WaitForChild("PlayerGui")
-task.spawn(function()
-    local success, err = pcall(function()
-        local casualWarning = playerGui:WaitForChild("CasualWarningGUI", 10)
-        if not casualWarning then return end
-        
-        local frame = casualWarning:WaitForChild("Frame")
-        
-        -- Wait for the frame to be visible
-        while not frame.Visible do
-            task.wait(0.1)
-        end
-        
-        wait(0.3)
-        
-        local returnButton = frame:WaitForChild("ReturnButton"):WaitForChild("TextButton")
-        
-        for _, connection in pairs(getconnections(returnButton.MouseButton1Click)) do
-            connection:Fire()
-        end
-    end)
-end)
 
 task.spawn(function()
     local success, err = pcall(function()
@@ -85,6 +66,29 @@ task.spawn(function()
         end
     end)
 end)
+
+task.spawn(function()
+    local success, err = pcall(function()
+        local casualWarning = playerGui:WaitForChild("CasualWarningGUI", 10)
+        if not casualWarning then return end
+        
+        local frame = casualWarning:WaitForChild("Frame")
+        
+        -- Wait for the frame to be visible
+        while not frame.Visible do
+            task.wait(0.1)
+        end
+        
+        wait(0.3)
+        
+        local returnButton = frame:WaitForChild("ReturnButton"):WaitForChild("TextButton")
+        
+        for _, connection in pairs(getconnections(returnButton.MouseButton1Click)) do
+            connection:Fire()
+        end
+    end)
+end)
+
 
 local PathfindingService = game:GetService("PathfindingService")
 local VirtualInputManager = game:GetService("VirtualInputManager")
