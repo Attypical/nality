@@ -1,3 +1,9 @@
+wait(3)
+
+if game.PlaceId == 4588604953 then
+	game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Play"):InvokeServer("play", "Casual", nil, 1)
+end
+
 if not game:IsLoaded() then
     game.Loaded:Wait()
 end
