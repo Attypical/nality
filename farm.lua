@@ -7,34 +7,7 @@ local localplr = Players.LocalPlayer
 
 local playerGui = localplr:WaitForChild("PlayerGui")
 
--- Try to close PrimeBuyGUI until it's gone
-task.spawn(function()
-    while true do
-        local success = pcall(function()
-            local primeBuyGUI = playerGui:FindFirstChild("PrimeBuyGUI")
-            if primeBuyGUI then
-                local closeButton = primeBuyGUI:FindFirstChild("Frame")
-                if closeButton then
-                    closeButton = closeButton:FindFirstChild("CloseButton")
-                    if closeButton then
-                        for _, connection in pairs(getconnections(closeButton.MouseButton1Click)) do
-                            connection:Fire()
-                        end
-                    end
-                end
-            else
-                -- PrimeBuyGUI is gone, exit loop
-                break
-            end
-        end)
-        
-        wait(0.3)
-    end
-end)
-
-wait(1)
-
--- Try to close CasualWarningGUI until it's gone
+-- Try to close CasualWarningGUI first until it's gone
 task.spawn(function()
     while true do
         local success = pcall(function()
@@ -54,6 +27,33 @@ task.spawn(function()
                 end
             else
                 -- CasualWarningGUI is gone, exit loop
+                break
+            end
+        end)
+        
+        wait(0.3)
+    end
+end)
+
+wait(1)
+
+-- Try to close PrimeBuyGUI until it's gone
+task.spawn(function()
+    while true do
+        local success = pcall(function()
+            local primeBuyGUI = playerGui:FindFirstChild("PrimeBuyGUI")
+            if primeBuyGUI then
+                local closeButton = primeBuyGUI:FindFirstChild("Frame")
+                if closeButton then
+                    closeButton = closeButton:FindFirstChild("CloseButton")
+                    if closeButton then
+                        for _, connection in pairs(getconnections(closeButton.MouseButton1Click)) do
+                            connection:Fire()
+                        end
+                    end
+                end
+            else
+                -- PrimeBuyGUI is gone, exit loop
                 break
             end
         end)
