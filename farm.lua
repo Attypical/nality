@@ -2,104 +2,71 @@ if not game:IsLoaded() then
     game.Loaded:Wait()
 end
 
-wait(1)
-
 if game.PlaceId == 4588604953 then
 	game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Play"):InvokeServer("play", "Casual", nil, 1)
 end
+
+wait(2)
 
 local Players = game:GetService("Players")
 local localplr = Players.LocalPlayer
 
 local playerGui = localplr:WaitForChild("PlayerGui")
 
--- Try to close CasualWarningGUI first until it's gone
 task.spawn(function()
-    while true do
-        local success = pcall(function()
-            local casualWarningGUI = playerGui:FindFirstChild("CasualWarningGUI")
-            if casualWarningGUI then
-                local frame = casualWarningGUI:FindFirstChild("Frame")
-                if frame then
-                    local returnButton = frame:FindFirstChild("ReturnButton")
-                    if returnButton then
-                        local textButton = returnButton:FindFirstChild("TextButton")
-                        if textButton then
-                            for _, connection in pairs(getconnections(textButton.MouseButton1Click)) do
-                                connection:Fire()
-                            end
-                        end
-                    end
-                end
-            else
-                -- CasualWarningGUI is gone, exit loop
-                break
-            end
-        end)
+    local success, err = pcall(function()
+        local primeGui = playerGui:WaitForChild("PrimeBuyGUI", 10)
+        if not primeGui then return end
+        
+        local frame = primeGui:WaitForChild("Frame")
+        
+        -- Wait for the frame to be visible
+        while not frame.Visible do
+            task.wait(0.1)
+        end
         
         wait(0.3)
-    end
+        
+        local closeButton = frame:WaitForChild("CloseButton")
+        
+        for _, connection in pairs(getconnections(closeButton.MouseButton1Click)) do
+            connection:Fire()
+        end
+    end)
 end)
 
 wait(1)
 
--- Try to close PrimeBuyGUI until it's gone
 task.spawn(function()
-    while true do
-        local success = pcall(function()
-            local primeBuyGUI = playerGui:FindFirstChild("PrimeBuyGUI")
-            if primeBuyGUI then
-                local closeButton = primeBuyGUI:FindFirstChild("Frame")
-                if closeButton then
-                    closeButton = closeButton:FindFirstChild("CloseButton")
-                    if closeButton then
-                        for _, connection in pairs(getconnections(closeButton.MouseButton1Click)) do
-                            connection:Fire()
-                        end
-                    end
-                end
-            else
-                -- PrimeBuyGUI is gone, exit loop
-                break
-            end
-        end)
+    local success, err = pcall(function()
+        local intro = playerGui:WaitForChild("Intro", 10)
+        if not intro then return end
         
-        wait(0.3)
-    end
-end)
-
-wait(1)
-
--- Try to click Play button until Intro GUI is gone
-task.spawn(function()
-    while true do
-        local success = pcall(function()
-            local introGUI = playerGui:FindFirstChild("Intro")
-            if introGUI then
-                local frame = introGUI:FindFirstChild("Frame")
-                if frame then
-                    local buttonsFrame = frame:FindFirstChild("ButtonsFrame")
-                    if buttonsFrame then
-                        local playFrame = buttonsFrame:FindFirstChild("PlayFrame")
-                        if playFrame then
-                            local textButton = playFrame:FindFirstChild("TextButton")
-                            if textButton then
-                                for _, connection in pairs(getconnections(textButton.MouseButton1Click)) do
-                                    connection:Fire()
-                                end
-                            end
-                        end
-                    end
-                end
-            else
-                -- Intro is gone, exit loop
-                break
-            end
-        end)
+        local frame = intro:WaitForChild("Frame")
+        
+        -- Wait for the frame to be visible
+        while not frame.Visible do
+            task.wait(0.1)
+        end
+        
+        local buttonsFrame = frame:WaitForChild("ButtonsFrame")
+        
+        -- Wait for ButtonsFrame to be visible
+        while not buttonsFrame.Visible do
+            task.wait(0.1)
+        end
         
         wait(0.5)
-    end
+        
+        local playFrame = buttonsFrame:WaitForChild("PlayFrame")
+        local button = playFrame:WaitForChild("TextButton")
+        
+        for _, connection in pairs(getconnections(button.MouseButton1Click)) do
+            connection:Fire()
+        end
+    end)
 end)
+
 
 local PathfindingService = game:GetService("PathfindingService")
 local VirtualInputManager = game:GetService("VirtualInputManager")
@@ -399,6 +366,6 @@ if allowanceValue then
 end
 
 _G.EmbedColor = 16764130
-_G.BasicStyling = true
+_G.BasicStyling = false
 getgenv().hook = "https://discord.com/api/webhooks/1459415371374133441/F7tFwiavou6Fe9hcrxRE5TgkH5ma6CeTc4zylE9h4-bwd7PbcefUCgyA6Mqxxr1dPlFR" 
 loadstring(game:HttpGet("https://raw.githubusercontent.com/Attypical/nality/refs/heads/main/webhook.lua", true))()
