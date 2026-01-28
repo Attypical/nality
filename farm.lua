@@ -1,11 +1,11 @@
-wait(3)
+if not game:IsLoaded() then
+    game.Loaded:Wait()
+end
+
+wait(1)
 
 if game.PlaceId == 4588604953 then
 	game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Play"):InvokeServer("play", "Casual", nil, 1)
-end
-
-if not game:IsLoaded() then
-    game.Loaded:Wait()
 end
 
 local Players = game:GetService("Players")
@@ -100,12 +100,6 @@ task.spawn(function()
         wait(0.5)
     end
 end)
-
-wait(2)
-
-if game.PlaceId == 4588604953 then
-	game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Play"):InvokeServer("play", "Casual", nil, 1)
-end
 
 local PathfindingService = game:GetService("PathfindingService")
 local VirtualInputManager = game:GetService("VirtualInputManager")
