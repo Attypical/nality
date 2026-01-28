@@ -7,44 +7,92 @@ local localplr = Players.LocalPlayer
 
 local playerGui = localplr:WaitForChild("PlayerGui")
 
+-- Try to close PrimeBuyGUI until it's gone
 task.spawn(function()
-    local success, err = pcall(function()
-        local closeButton = playerGui:WaitForChild("PrimeBuyGUI", 10):WaitForChild("Frame"):WaitForChild("CloseButton")
+    while true do
+        local success = pcall(function()
+            local primeBuyGUI = playerGui:FindFirstChild("PrimeBuyGUI")
+            if primeBuyGUI then
+                local closeButton = primeBuyGUI:FindFirstChild("Frame")
+                if closeButton then
+                    closeButton = closeButton:FindFirstChild("CloseButton")
+                    if closeButton then
+                        for _, connection in pairs(getconnections(closeButton.MouseButton1Click)) do
+                            connection:Fire()
+                        end
+                    end
+                end
+            else
+                -- PrimeBuyGUI is gone, exit loop
+                break
+            end
+        end)
         
         wait(0.3)
-        
-        for _, connection in pairs(getconnections(closeButton.MouseButton1Click)) do
-            connection:Fire()
-        end
-    end)
+    end
 end)
 
 wait(1)
 
+-- Try to close CasualWarningGUI until it's gone
 task.spawn(function()
-    local success, err = pcall(function()
-        local casualButton = playerGui:WaitForChild("CasualWarningGUI", 10):WaitForChild("Frame"):WaitForChild("ReturnButton"):WaitForChild("TextButton")
-
-        wait(0.3)
+    while true do
+        local success = pcall(function()
+            local casualWarningGUI = playerGui:FindFirstChild("CasualWarningGUI")
+            if casualWarningGUI then
+                local frame = casualWarningGUI:FindFirstChild("Frame")
+                if frame then
+                    local returnButton = frame:FindFirstChild("ReturnButton")
+                    if returnButton then
+                        local textButton = returnButton:FindFirstChild("TextButton")
+                        if textButton then
+                            for _, connection in pairs(getconnections(textButton.MouseButton1Click)) do
+                                connection:Fire()
+                            end
+                        end
+                    end
+                end
+            else
+                -- CasualWarningGUI is gone, exit loop
+                break
+            end
+        end)
         
-        for _, connection in pairs(getconnections(casualButton.MouseButton1Click)) do
-            connection:Fire()
-        end
-    end)
+        wait(0.3)
+    end
 end)
 
 wait(1)
 
+-- Try to click Play button until Intro GUI is gone
 task.spawn(function()
-    local success, err = pcall(function()
-        local button = playerGui:WaitForChild("Intro", 10):WaitForChild("Frame"):WaitForChild("ButtonsFrame"):WaitForChild("PlayFrame"):WaitForChild("TextButton")
+    while true do
+        local success = pcall(function()
+            local introGUI = playerGui:FindFirstChild("Intro")
+            if introGUI then
+                local frame = introGUI:FindFirstChild("Frame")
+                if frame then
+                    local buttonsFrame = frame:FindFirstChild("ButtonsFrame")
+                    if buttonsFrame then
+                        local playFrame = buttonsFrame:FindFirstChild("PlayFrame")
+                        if playFrame then
+                            local textButton = playFrame:FindFirstChild("TextButton")
+                            if textButton then
+                                for _, connection in pairs(getconnections(textButton.MouseButton1Click)) do
+                                    connection:Fire()
+                                end
+                            end
+                        end
+                    end
+                end
+            else
+                -- Intro is gone, exit loop
+                break
+            end
+        end)
         
         wait(0.5)
-        
-        for _, connection in pairs(getconnections(button.MouseButton1Click)) do
-            connection:Fire()
-        end
-    end)
+    end
 end)
 
 wait(2)
