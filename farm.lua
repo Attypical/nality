@@ -3,7 +3,7 @@ if not game:IsLoaded() then
 end
 loadstring(game:HttpGet("https://raw.githubusercontent.com/Attypical/nality/refs/heads/main/notif.lua", true))()
 wait(2)
-_G.notify("welcome! ^-^", 2)
+_G.notify("welcome! ヾ(•ω•`)o", 2)
 if game.PlaceId == 4588604953 then
 	_G.notify("> joining game...", 1)
 	game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Play"):InvokeServer("play", "Casual", nil, 1)
@@ -186,6 +186,7 @@ local function startPathfinding()
 
     if not rootPart or not humanoid then
         reset()
+		_G.notify("> unexpected error occured", 3)
         return false
     end
 
@@ -221,6 +222,7 @@ local function startPathfinding()
     end
 
     if not nearestATM then
+		_G.notify("> failed finding nearest atm ", 3)
         reset()
         return false
     end
@@ -301,6 +303,7 @@ local function startPathfinding()
                             currentAnim:Stop()
                         end
                         reset()
+						_G.notify("> resetting due to obstacle", 3)
                         return false
                     end
                     lastPosition = currentPos
@@ -329,6 +332,7 @@ local function startPathfinding()
             if currentAnim then
                 currentAnim:Stop()
             end
+			_G.notify("> resetting due to script failure ＞︿＜", 3)
             reset()
             return false
         end
@@ -343,6 +347,7 @@ local function startPathfinding()
 
         if allowanceValue and allowanceValue.Value > 0 then
             if _G.OnATMClaimed then
+							
                 _G.OnATMClaimed()
             end
         end
@@ -352,6 +357,7 @@ local function startPathfinding()
         if currentAnim then
             currentAnim:Stop()
         end
+		_G.notify("> resetting due to script failure ＞︿＜", 3)
         reset()
         return false
     end
@@ -366,7 +372,7 @@ if allowanceValue then
 
             if allowanceValue.Value == 0 and not isProcessing then
                 isProcessing = true
-
+				_G.notify("> allowance is ready!", 3)
                 reset()
 
                 repeat task.wait(0.1) until not localplr.Character or not localplr.Character:FindFirstChildWhichIsA("Humanoid") or localplr.Character:FindFirstChildWhichIsA("Humanoid").Health <= 0
