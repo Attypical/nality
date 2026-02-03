@@ -89,7 +89,7 @@ local function startFarm()
 
     pcall(function()
         local data = {
-            ["content"] = "autofarm is now active, " .. stylingvalue .. ". ^-^"
+            ["content"] = "joined server, " .. stylingvalue .. ". ^-^"
         }
         sendRequest(data)
     end)
