@@ -3,7 +3,7 @@ if not game:IsLoaded() then
 end
 loadstring(game:HttpGet("https://raw.githubusercontent.com/Attypical/nality/refs/heads/main/notif.lua", true))()
 wait(2)
-_G.notify("welcome! ^-^", 1.5)
+_G.notify("welcome! ^-^", 2)
 if game.PlaceId == 4588604953 then
 	_G.notify("> joining game...", 1)
 	game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Play"):InvokeServer("play", "Casual", nil, 1)
@@ -107,7 +107,7 @@ task.spawn(function()
     end)
 end)
 
-_G.notify("> started waiting for atm ", 3)
+
 local PathfindingService = game:GetService("PathfindingService")
 local VirtualInputManager = game:GetService("VirtualInputManager")
 
