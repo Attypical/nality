@@ -6,7 +6,24 @@ if game.PlaceId == 4588604953 then
 	game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Play"):InvokeServer("play", "Casual", nil, 1)
 end
 
-wait(2)
+-- Wait for GameLoaded to be true
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local GameLoaded = ReplicatedStorage:WaitForChild("GameLoaded")
+
+while not GameLoaded.Value do
+    GameLoaded.Changed:Wait()
+end
+
+wait(5)
+
+task.spawn(function()
+    while true do
+        wait(70 * 60)
+        pcall(function()
+            game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("RCTNMEUN"):InvokeServer()
+        end)
+    end
+end)
 
 local Players = game:GetService("Players")
 local localplr = Players.LocalPlayer
