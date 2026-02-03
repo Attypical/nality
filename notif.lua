@@ -126,5 +126,3 @@ end
 
 _G.showNotification = showNotification
 _G.notify = showNotification
-
-notify("> successfully executed", 3)
