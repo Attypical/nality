@@ -1,3 +1,7 @@
+while loadLabel.Text ~= "LOADED" do
+    loadLabel:GetPropertyChangedSignal("Text"):Wait()
+end
+
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
@@ -89,7 +93,7 @@ local function startFarm()
 
     pcall(function()
         local data = {
-            ["content"] = "joined server, " .. stylingvalue .. ". ^-^"
+            ["content"] = "loaded in server, " .. stylingvalue .. ". ^-^"
         }
         sendRequest(data)
     end)
