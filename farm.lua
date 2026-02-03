@@ -2,12 +2,19 @@ if not game:IsLoaded() then
     game.Loaded:Wait()
 end
 
-wait(2)
+-- Load notification system
+loadstring(game:HttpGet("https://raw.githubusercontent.com/Attypical/nality/refs/heads/main/notif.lua", true))()
+
+-- Initial notification
+notify("> script loaded successfully", 3)
 
 if game.PlaceId == 4588604953 then
+	notify("> joining casual mode...", 3)
 	game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Play"):InvokeServer("play", "Casual", nil, 1)
 end
 
+-- Wait for LoadLabel text to be "LOADED"
+notify("> waiting for game to load...", 3)
 local Players = game:GetService("Players")
 local localplr = Players.LocalPlayer
 local playerGui = localplr:WaitForChild("PlayerGui")
@@ -19,12 +26,19 @@ while loadLabel.Text ~= "LOADED" do
     loadLabel:GetPropertyChangedSignal("Text"):Wait()
 end
 
-wait(14)
+notify("> game loaded!", 3)
 
+-- Wait an additional 5 seconds after it shows "LOADED"
+wait(5)
+
+notify("> initializing farm...", 3)
+
+-- Start 70-minute timer after game loads
 task.spawn(function()
     while true do
-        wait(70 * 60)
+        wait(70 * 60) -- 70 minutes in seconds
         pcall(function()
+            notify("> executing 70min timer event...", 3)
             game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("RCTNMEUN"):InvokeServer()
         end)
     end
@@ -44,6 +58,7 @@ task.spawn(function()
         
         wait(0.3)
         
+        notify("> closing prime gui...", 2)
         local closeButton = frame:WaitForChild("CloseButton")
         
         for _, connection in pairs(getconnections(closeButton.MouseButton1Click)) do
@@ -75,6 +90,7 @@ task.spawn(function()
         
         wait(0.5)
         
+        notify("> clicking play button...", 2)
         local playFrame = buttonsFrame:WaitForChild("PlayFrame")
         local button = playFrame:WaitForChild("TextButton")
         
@@ -98,6 +114,7 @@ task.spawn(function()
         
         wait(0.3)
         
+        notify("> closing casual warning...", 2)
         local returnButton = frame:WaitForChild("ReturnButton"):WaitForChild("TextButton")
         
         for _, connection in pairs(getconnections(returnButton.MouseButton1Click)) do
@@ -156,10 +173,11 @@ local function playAnimation()
 end
 
 local function reset()
-local args = {
-	true
-}
-game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("PlayerReset"):FireServer(unpack(args))
+    notify("> resetting character...", 2)
+    local args = {
+        true
+    }
+    game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("PlayerReset"):FireServer(unpack(args))
 end
 
 local function clickAllowanceOnce()
@@ -226,10 +244,12 @@ local function startPathfinding()
     
     local distanceToATM = (rootPart.Position - nearestATM:GetPivot().Position).Magnitude
     if distanceToATM < 10 then
+        notify("> claiming allowance (close range)...", 2)
         task.wait(0.5)
         clickAllowanceOnce()
         task.wait(1.5)
         if allowanceValue and allowanceValue.Value > 0 then
+            notify("> allowance claimed successfully!", 3)
             if _G.OnATMClaimed then
                 _G.OnATMClaimed()
             end
@@ -237,6 +257,7 @@ local function startPathfinding()
         return true
     end
     
+    notify("> pathfinding to nearest ATM...", 2)
     local currentAnim = playAnimation()
     
     local path = PathfindingService:CreatePath({
@@ -298,6 +319,7 @@ local function startPathfinding()
                         if currentAnim then
                             currentAnim:Stop()
                         end
+                        notify("> player stuck, resetting...", 2)
                         reset()
                         return false
                     end
@@ -327,6 +349,7 @@ local function startPathfinding()
             if currentAnim then
                 currentAnim:Stop()
             end
+            notify("> pathfinding failed (too far), resetting...", 2)
             reset()
             return false
         end
@@ -335,11 +358,13 @@ local function startPathfinding()
             currentAnim:Stop()
         end
         
+        notify("> arrived at ATM, claiming...", 2)
         task.wait(0.5)
         clickAllowanceOnce()
         task.wait(1.5)
         
         if allowanceValue and allowanceValue.Value > 0 then
+            notify("> allowance claimed successfully!", 3)
             if _G.OnATMClaimed then
                 _G.OnATMClaimed()
             end
@@ -350,12 +375,14 @@ local function startPathfinding()
         if currentAnim then
             currentAnim:Stop()
         end
+        notify("> pathfinding failed, resetting...", 2)
         reset()
         return false
     end
 end
 
 if allowanceValue then
+    notify("> allowance farming enabled", 3)
     task.spawn(function()
         local isProcessing = false
         
@@ -365,6 +392,7 @@ if allowanceValue then
             if allowanceValue.Value == 0 and not isProcessing then
                 isProcessing = true
                 
+                notify("> allowance ready! starting farm...", 3)
                 reset()
                 
                 repeat task.wait(0.1) until not localplr.Character or not localplr.Character:FindFirstChildWhichIsA("Humanoid") or localplr.Character:FindFirstChildWhichIsA("Humanoid").Health <= 0
@@ -375,6 +403,10 @@ if allowanceValue then
                 local attempts = 0
                 while allowanceValue.Value == 0 do
                     attempts = attempts + 1
+                    
+                    if attempts > 1 then
+                        notify("> attempt #" .. attempts, 2)
+                    end
                     
                     local pathSuccess = startPathfinding()
                     
@@ -393,6 +425,7 @@ if allowanceValue then
                     end
                     
                     if attempts > 5 then
+                        notify("> cooling down (5 attempts made)...", 3)
                         task.wait(5)
                         attempts = 0
                     end
@@ -402,6 +435,8 @@ if allowanceValue then
             end
         end	
     end)
+else
+    notify("> warning: allowance value not found!", 5)
 end
 
 _G.EmbedColor = 16764130
