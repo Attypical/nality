@@ -17,7 +17,7 @@ while loadLabel.Text ~= "LOADED" do
     loadLabel:GetPropertyChangedSignal("Text"):Wait()
 end
 
-wait(10)
+wait(14)
 
 task.spawn(function()
     while true do
