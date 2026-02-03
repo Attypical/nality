@@ -387,7 +387,7 @@ if allowanceValue then
                     local pathSuccess = startPathfinding()
 
                     if not pathSuccess then
-						_G.notify("> failed to compute path!", 3)
+						_G.notify("> failed path computation :((((", 3)
                         reset()
                         repeat task.wait(0.1) until not localplr.Character or not localplr.Character:FindFirstChildWhichIsA("Humanoid") or localplr.Character:FindFirstChildWhichIsA("Humanoid").Health <= 0
                         newChar = localplr.CharacterAdded:Wait()
