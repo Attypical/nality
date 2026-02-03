@@ -35,7 +35,7 @@ greenreply.BorderSizePixel = 0
 greenreply.Position = UDim2.new(0, -244, 0, -244)
 greenreply.Size = UDim2.new(0, 648, 0, 18)
 greenreply.ZIndex = 99999
-greenreply.Font = Enum.Font.Unknown
+greenreply.Font = Enum.Font.GothamSemibold
 greenreply.Text = ""
 greenreply.TextColor3 = Color3.fromRGB(120, 153, 33)
 greenreply.TextSize = 24.000
@@ -124,13 +124,7 @@ local function showNotification(text, duration)
 	end
 end
 
--- Make globally accessible
-getgenv().showNotification = showNotification
-getgenv().notify = showNotification
+_G.showNotification = showNotification
+_G.notify = showNotification
 
--- Show the custom message
-notify("> successfully executed", 5)
-
-print("=================================")
-print("Greentext Notification System Loaded!")
-print("=================================")
+notify("> successfully executed", 3)
