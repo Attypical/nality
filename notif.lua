@@ -12,7 +12,8 @@ end
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "GreentextNotifGui"
 screenGui.ResetOnSpawn = false
-screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global  -- Changed to Global
+screenGui.DisplayOrder = 999999  -- Added DisplayOrder
 screenGui.Parent = playerGui
 
 -- Create Frame
@@ -30,7 +31,8 @@ local greenreply = Instance.new("TextLabel")
 greenreply.Name = "GreentextLabel"
 greenreply.Parent = Frame
 greenreply.Active = true
-greenreply.BackgroundTransparency = 1.000
+greenreply.BackgroundColor3 = Color3.fromRGB(10, 10, 10)  -- Very dark gray
+greenreply.BackgroundTransparency = 0.65  -- Semi-transparent
 greenreply.BorderSizePixel = 0
 greenreply.Position = UDim2.new(0, -244, 0, -244)
 greenreply.Size = UDim2.new(0, 648, 0, 18)
@@ -39,10 +41,24 @@ greenreply.Font = Enum.Font.GothamSemibold
 greenreply.Text = ""
 greenreply.TextColor3 = Color3.fromRGB(120, 153, 33)
 greenreply.TextSize = 24.000
-greenreply.TextStrokeTransparency = 0.700
+greenreply.TextStrokeTransparency = 0.5  -- Moderate stroke
+greenreply.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
 greenreply.TextWrapped = true
 greenreply.TextXAlignment = Enum.TextXAlignment.Left
 greenreply.TextYAlignment = Enum.TextYAlignment.Top
+
+-- Add rounded corners for polish
+local uiCorner = Instance.new("UICorner")
+uiCorner.CornerRadius = UDim.new(0, 4)
+uiCorner.Parent = greenreply
+
+-- Add padding
+local uiPadding = Instance.new("UIPadding")
+uiPadding.PaddingLeft = UDim.new(0, 10)
+uiPadding.PaddingRight = UDim.new(0, 10)
+uiPadding.PaddingTop = UDim.new(0, 3)
+uiPadding.PaddingBottom = UDim.new(0, 3)
+uiPadding.Parent = greenreply
 
 -- Animation positions
 local pos1 = UDim2.new(0, -40, 0, 350) 
@@ -68,8 +84,10 @@ local function showNotification(text, duration)
 	greenreply.Text = text
 	
 	-- SET INITIAL POSITION (off screen and invisible)
-	greenreply.Position = pos1
-	greenreply.TextTransparency = 1
+-- SET INITIAL POSITION (off screen and invisible)
+greenreply.Position = pos1
+greenreply.TextTransparency = 1
+greenreply.BackgroundTransparency = 1  -- Add this
 	
 	-- Create intro tween (move AND fade in)
 	local tweenInfo = TweenInfo.new(
@@ -81,15 +99,18 @@ local function showNotification(text, duration)
 		0                                 
 	)
 	
-	local tweenintro = TweenService:Create(
-		greenreply,
-		tweenInfo,
-		{
-			Position = pos2,
-			TextTransparency = 0
-		}
-	)
-	
+-- In the intro tween
+local tweenintro = TweenService:Create(
+	greenreply,
+	tweenInfo,
+	{
+		Position = pos2,
+		TextTransparency = 0,
+		BackgroundTransparency = 0.65  -- Add this
+	}
+)
+
+-- In the outro tween
 	tweenintro:Play()
 	tweenintro.Completed:Wait()
 	
@@ -106,11 +127,14 @@ local function showNotification(text, duration)
 		0                                 
 	)
 	
-	local tweenoutro = TweenService:Create(
-		greenreply,
-		tweenInfoOutro,
-		{TextTransparency = 1} 
-	)
+local tweenoutro = TweenService:Create(
+	greenreply,
+	tweenInfoOutro,
+	{
+		TextTransparency = 1,
+		BackgroundTransparency = 1  -- Add this
+	}
+)	
 	
 	tweenoutro:Play()
 	tweenoutro.Completed:Wait()
