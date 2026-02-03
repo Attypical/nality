@@ -6,7 +6,6 @@ if game.PlaceId == 4588604953 then
 	game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Play"):InvokeServer("play", "Casual", nil, 1)
 end
 
--- Wait for LoadLabel text to be "LOADED"
 local Players = game:GetService("Players")
 local localplr = Players.LocalPlayer
 local playerGui = localplr:WaitForChild("PlayerGui")
@@ -18,13 +17,11 @@ while loadLabel.Text ~= "LOADED" do
     loadLabel:GetPropertyChangedSignal("Text"):Wait()
 end
 
--- Wait an additional 5 seconds after it shows "LOADED"
-wait(5)
+wait(10)
 
--- Start 70-minute timer after game loads
 task.spawn(function()
     while true do
-        wait(70 * 60) -- 70 minutes in seconds
+        wait(70 * 60)
         pcall(function()
             game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("RCTNMEUN"):InvokeServer()
         end)
