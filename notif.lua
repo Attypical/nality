@@ -12,8 +12,8 @@ end
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "GreentextNotifGui"
 screenGui.ResetOnSpawn = false
-screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global  -- Changed to Global
-screenGui.DisplayOrder = 999999  -- Added DisplayOrder
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+screenGui.DisplayOrder = 999999
 screenGui.Parent = playerGui
 
 -- Create Frame
@@ -31,21 +31,21 @@ local greenreply = Instance.new("TextLabel")
 greenreply.Name = "GreentextLabel"
 greenreply.Parent = Frame
 greenreply.Active = true
-greenreply.BackgroundColor3 = Color3.fromRGB(10, 10, 10)  -- Very dark gray
-greenreply.BackgroundTransparency = 0.65  -- Semi-transparent
+greenreply.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+greenreply.BackgroundTransparency = 0.8
 greenreply.BorderSizePixel = 0
 greenreply.Position = UDim2.new(0, -244, 0, -244)
-greenreply.Size = UDim2.new(0, 648, 0, 18)
+greenreply.Size = UDim2.new(0, 520, 0, 27)
 greenreply.ZIndex = 99999
 greenreply.Font = Enum.Font.GothamSemibold
 greenreply.Text = ""
 greenreply.TextColor3 = Color3.fromRGB(120, 153, 33)
 greenreply.TextSize = 26.000
-greenreply.TextStrokeTransparency = 0.5  -- Moderate stroke
+greenreply.TextStrokeTransparency = 0.5
 greenreply.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
 greenreply.TextWrapped = true
 greenreply.TextXAlignment = Enum.TextXAlignment.Left
-greenreply.TextYAlignment = Enum.TextYAlignment.Top
+greenreply.TextYAlignment = Enum.TextYAlignment.Center
 
 -- Add rounded corners for polish
 local uiCorner = Instance.new("UICorner")
@@ -59,6 +59,15 @@ uiPadding.PaddingRight = UDim.new(0, 10)
 uiPadding.PaddingTop = UDim.new(0, 3)
 uiPadding.PaddingBottom = UDim.new(0, 3)
 uiPadding.Parent = greenreply
+
+-- Add rotating gradient (white to grayish red)
+local UIGradient = Instance.new("UIGradient")
+UIGradient.Color = ColorSequence.new{
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(180, 160, 160))
+}
+UIGradient.Rotation = 86
+UIGradient.Parent = greenreply
 
 -- Animation positions
 local pos1 = UDim2.new(0, -40, 0, 350) 
@@ -84,10 +93,9 @@ local function showNotification(text, duration)
 	greenreply.Text = text
 	
 	-- SET INITIAL POSITION (off screen and invisible)
--- SET INITIAL POSITION (off screen and invisible)
-greenreply.Position = pos1
-greenreply.TextTransparency = 1
-greenreply.BackgroundTransparency = 1  -- Add this
+	greenreply.Position = pos1
+	greenreply.TextTransparency = 1
+	greenreply.BackgroundTransparency = 1
 	
 	-- Create intro tween (move AND fade in)
 	local tweenInfo = TweenInfo.new(
@@ -99,23 +107,22 @@ greenreply.BackgroundTransparency = 1  -- Add this
 		0                                 
 	)
 	
--- In the intro tween
-local tweenintro = TweenService:Create(
-	greenreply,
-	tweenInfo,
-	{
-		Position = pos2,
-		TextTransparency = 0,
-		BackgroundTransparency = 0.65  -- Add this
-	}
-)
-
--- In the outro tween
+	local tweenintro = TweenService:Create(
+		greenreply,
+		tweenInfo,
+		{
+			Position = pos2,
+			TextTransparency = 0,
+			BackgroundTransparency = 0
+		}
+	)
+	
+	
 	tweenintro:Play()
 	tweenintro.Completed:Wait()
 	
-	-- Wait for display time
 	task.wait(duration)
+	
 	
 	-- Create and play outro tween
 	local tweenInfoOutro = TweenInfo.new(
@@ -127,14 +134,14 @@ local tweenintro = TweenService:Create(
 		0                                 
 	)
 	
-local tweenoutro = TweenService:Create(
-	greenreply,
-	tweenInfoOutro,
-	{
-		TextTransparency = 1,
-		BackgroundTransparency = 1  -- Add this
-	}
-)	
+	local tweenoutro = TweenService:Create(
+		greenreply,
+		tweenInfoOutro,
+		{
+			TextTransparency = 1,
+			BackgroundTransparency = 1
+		}
+	)	
 	
 	tweenoutro:Play()
 	tweenoutro.Completed:Wait()
