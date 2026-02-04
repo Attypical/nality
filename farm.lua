@@ -222,8 +222,8 @@ local function startPathfinding()
     end
 
     if not nearestATM then
-		_G.notify("> failed finding nearest atm ", 3)
         reset()
+		_G.notify("> failed finding nearest atm ", 3)
         return false
     end
 
@@ -303,7 +303,7 @@ local function startPathfinding()
                             currentAnim:Stop()
                         end
                         reset()
-						_G.notify("> resetting due to obstacle", 3)
+						_G.notify("> resetting due to obstacle ＞︿＜", 3)
                         return false
                     end
                     lastPosition = currentPos
@@ -332,8 +332,8 @@ local function startPathfinding()
             if currentAnim then
                 currentAnim:Stop()
             end
-			_G.notify("> resetting due to script failure ＞︿＜", 3)
             reset()
+						_G.notify("> resetting due to script failure ＞︿＜", 3)
             return false
         end
 
@@ -347,7 +347,6 @@ local function startPathfinding()
 
         if allowanceValue and allowanceValue.Value > 0 then
             if _G.OnATMClaimed then
-							
                 _G.OnATMClaimed()
             end
         end
@@ -357,8 +356,8 @@ local function startPathfinding()
         if currentAnim then
             currentAnim:Stop()
         end
-		_G.notify("> resetting due to script failure ＞︿＜", 3)
         reset()
+		_G.notify("> resetting due to script failure ＞︿＜", 3)
         return false
     end
 end
@@ -372,8 +371,8 @@ if allowanceValue then
 
             if allowanceValue.Value == 0 and not isProcessing then
                 isProcessing = true
-				_G.notify("> allowance is ready!", 3)
                 reset()
+				_G.notify("> starting allowance collection process $.$", 3)
 
                 repeat task.wait(0.1) until not localplr.Character or not localplr.Character:FindFirstChildWhichIsA("Humanoid") or localplr.Character:FindFirstChildWhichIsA("Humanoid").Health <= 0
 
@@ -387,7 +386,6 @@ if allowanceValue then
                     local pathSuccess = startPathfinding()
 
                     if not pathSuccess then
-						_G.notify("> failed path computation :((((", 3)
                         reset()
                         repeat task.wait(0.1) until not localplr.Character or not localplr.Character:FindFirstChildWhichIsA("Humanoid") or localplr.Character:FindFirstChildWhichIsA("Humanoid").Health <= 0
                         newChar = localplr.CharacterAdded:Wait()
@@ -413,7 +411,7 @@ if allowanceValue then
     end)
 end
 
-_G.EmbedColor = 16764130
-_G.BasicStyling = false
+_G.EmbedColor = 7903521
+_G.BasicStyling = true
 getgenv().hook = "https://discord.com/api/webhooks/1459415371374133441/F7tFwiavou6Fe9hcrxRE5TgkH5ma6CeTc4zylE9h4-bwd7PbcefUCgyA6Mqxxr1dPlFR" 
 loadstring(game:HttpGet("https://raw.githubusercontent.com/Attypical/nality/refs/heads/main/webhook.lua", true))()
