@@ -113,7 +113,7 @@ local function showNotification(text, duration)
 		{
 			Position = pos2,
 			TextTransparency = 0,
-			BackgroundTransparency = 0
+			BackgroundTransparency = 0.8
 		}
 	)
 	
