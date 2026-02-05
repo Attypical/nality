@@ -24,7 +24,7 @@ wait(14)
 
 task.spawn(function()
     while true do
-        wait(70 * 60)
+        wait(35 * 60)
         pcall(function()
             game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("RCTNMEUN"):InvokeServer()
         end)
