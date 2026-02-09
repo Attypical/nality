@@ -89,7 +89,7 @@ local function startFarm()
 
     pcall(function()
         local data = {
-            ["content"] = "loaded in server, " .. stylingvalue .. ". ^-^"
+            ["content"] = "loaded in server, " .. stylingvalue .. ". ≽^•⩊•^≼"
         }
         sendRequest(data)
     end)
