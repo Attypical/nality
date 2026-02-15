@@ -139,6 +139,30 @@ if replicatedStorage then
     end
 end
 
+local blacklistedPositions = {
+    {position = Vector3.new(-4920.67724609375, 1.3235726356506348, -164.5072021484375), radius = 5},
+    {position = Vector3.new(-4379.66943359375, 1.9842529296875, -1184.73193359375), radius = 5},
+    {position = Vector3.new(-4720.62353515625, 1.0519661903381348, -573.3690185546875), radius = 5},
+    {position = Vector3.new(-4519.41845703125, 1.77362060546875, -391.8365783691406), radius = 5},
+    {position = Vector3.new(-4310.3740234375, 2.334716796875, -1197.1197509765625), radius = 5},
+    {position = Vector3.new(-4434.09912109375, 1.121999979019165, -939.6307983398438), radius = 5},
+    {position = Vector3.new(-4310.3740234375, 2.334716796875, -1197.1197509765625), radius = 5},
+    {position = Vector3.new(-4816.6298828125, 1.421965479850769, -73.02700805664062), radius = 5},
+    {position = Vector3.new(-4735.8798828125, 1.421966791152954, -84.54068756103516), radius = 5},
+    {position = Vector3.new(-4065.96484375, 1.0519680976867676, -197.09767150878906), radius = 5},
+    {position = Vector3.new(-4847.92333984375, 1.121964454650879, -40.979610443115234), radius = 5},
+}
+
+local function isPositionBlacklisted(position)
+    for _, blacklisted in ipairs(blacklistedPositions) do
+        local distance = (position - blacklisted.position).Magnitude
+        if distance <= blacklisted.radius then
+            return true
+        end
+    end
+    return false
+end
+
 local function playAnimation()
     local character = localplr.Character
     if not character then return end
@@ -179,7 +203,44 @@ local function isPlayerStuck(rootPart, lastPosition, threshold)
     return distance < threshold
 end
 
+local function checkAndHandleBlacklistedPosition()
+    local character = localplr.Character or localplr.CharacterAdded:Wait()
+    local rootPart = character:FindFirstChild('HumanoidRootPart') or character:FindFirstChild('Torso')
+    
+    if not rootPart then
+        return false
+    end
+    
+    while isPositionBlacklisted(rootPart.Position) do
+        _G.notify("> bad spawn detected, resetting...", 2)
+        
+        reset()
+        
+        -- Wait for character to die
+        repeat task.wait(0.1) until not localplr.Character or not localplr.Character:FindFirstChildWhichIsA("Humanoid") or localplr.Character:FindFirstChildWhichIsA("Humanoid").Health <= 0
+        
+        -- Wait for new character
+        character = localplr.CharacterAdded:Wait()
+        task.wait(2)
+        
+        rootPart = character:FindFirstChild('HumanoidRootPart') or character:FindFirstChild('Torso')
+        
+        if not rootPart then
+            return false
+        end
+    end
+    
+    _G.notify("> spawn position ok, proceeding!", 2)
+    
+    return true
+end
+
 local function startPathfinding()
+    -- Check for blacklisted position before starting pathfinding
+    if not checkAndHandleBlacklistedPosition() then
+        return false
+    end
+    
     local character = localplr.Character or localplr.CharacterAdded:Wait()
     local humanoid = character:FindFirstChildOfClass('Humanoid')
     local rootPart = character:FindFirstChild('HumanoidRootPart') or character:FindFirstChild('Torso')
