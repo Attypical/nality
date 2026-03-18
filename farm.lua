@@ -23,6 +23,15 @@ end
 wait(14)
 
 task.spawn(function()
+    while true do
+        wait(35 * 60)
+        pcall(function()
+            game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("RCTNMEUN"):InvokeServer()
+        end)
+    end
+end)
+
+task.spawn(function()
     local success, err = pcall(function()
         local primeGui = playerGui:WaitForChild("PrimeBuyGUI", 10)
         if not primeGui then return end
