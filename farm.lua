@@ -37,8 +37,8 @@ task.spawn(function()
 
         local closeButton = frame:WaitForChild("CloseButton")
 
-        for _, connection in pairs(getconnections(closeButton.TouchTap)) do
-            connection:Fire({closeButton.AbsolutePosition + closeButton.AbsoluteSize / 2})
+        for _, connection in pairs(getconnections(closeButton.Activated)) do
+            connection:Fire()
         end
     end)
 end)
@@ -67,8 +67,8 @@ task.spawn(function()
         local playFrame = buttonsFrame:WaitForChild("PlayFrame")
         local button = playFrame:WaitForChild("TextButton")
 
-        for _, connection in pairs(getconnections(button.TouchTap)) do
-            connection:Fire({button.AbsolutePosition + button.AbsoluteSize / 2})
+        for _, connection in pairs(getconnections(button.Activated)) do
+            connection:Fire()
         end
     end)
 end)
@@ -88,8 +88,8 @@ task.spawn(function()
 
         local returnButton = frame:WaitForChild("ReturnButton"):WaitForChild("TextButton")
 
-        for _, connection in pairs(getconnections(returnButton.TouchTap)) do
-            connection:Fire({returnButton.AbsolutePosition + returnButton.AbsoluteSize / 2})
+        for _, connection in pairs(getconnections(returnButton.Activated)) do
+            connection:Fire()
         end
     end)
 end)
@@ -176,8 +176,8 @@ local function clickAllowanceOnce()
     pcall(function()
         local claimButton = playerGui:WaitForChild("CoreGUI"):WaitForChild("ATMFrame"):WaitForChild("ATMFrame"):WaitForChild("AllowanceFrame"):WaitForChild("ClaimButton"):WaitForChild("TextButton")
 
-        for _, connection in pairs(getconnections(claimButton.TouchTap)) do
-            connection:Fire({claimButton.AbsolutePosition + claimButton.AbsoluteSize / 2})
+        for _, connection in pairs(getconnections(claimButton.Activated)) do
+            connection:Fire()
         end
     end)
 end
