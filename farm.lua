@@ -21,15 +21,15 @@ while loadLabel.Text ~= "LOADED" do
 end
 
 wait(14)
-
---[[task.spawn(function()
+--yes
+task.spawn(function()
     while true do
         wait(35 * 60)
         pcall(function()
             game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("RCTNMEUN"):InvokeServer()
         end)
     end
-end)--]]
+end)
 
 task.spawn(function()
     local success, err = pcall(function()
@@ -38,6 +38,7 @@ task.spawn(function()
 
         local frame = primeGui:WaitForChild("Frame")
 
+        -- Wait for the frame to be visible
         while not frame.Visible do
             task.wait(0.1)
         end
@@ -46,7 +47,7 @@ task.spawn(function()
 
         local closeButton = frame:WaitForChild("CloseButton")
 
-        for _, connection in pairs(getconnections(closeButton.Activated)) do
+        for _, connection in pairs(getconnections(closeButton.MouseButton1Click)) do
             connection:Fire()
         end
     end)
@@ -61,12 +62,14 @@ task.spawn(function()
 
         local frame = intro:WaitForChild("Frame")
 
+        -- Wait for the frame to be visible
         while not frame.Visible do
             task.wait(0.1)
         end
 
         local buttonsFrame = frame:WaitForChild("ButtonsFrame")
 
+        -- Wait for ButtonsFrame to be visible
         while not buttonsFrame.Visible do
             task.wait(0.1)
         end
@@ -76,7 +79,7 @@ task.spawn(function()
         local playFrame = buttonsFrame:WaitForChild("PlayFrame")
         local button = playFrame:WaitForChild("TextButton")
 
-        for _, connection in pairs(getconnections(button.Activated)) do
+        for _, connection in pairs(getconnections(button.MouseButton1Click)) do
             connection:Fire()
         end
     end)
@@ -89,6 +92,7 @@ task.spawn(function()
 
         local frame = casualWarning:WaitForChild("Frame")
 
+        -- Wait for the frame to be visible
         while not frame.Visible do
             task.wait(0.1)
         end
@@ -97,7 +101,7 @@ task.spawn(function()
 
         local returnButton = frame:WaitForChild("ReturnButton"):WaitForChild("TextButton")
 
-        for _, connection in pairs(getconnections(returnButton.Activated)) do
+        for _, connection in pairs(getconnections(returnButton.MouseButton1Click)) do
             connection:Fire()
         end
     end)
@@ -177,15 +181,17 @@ local function playAnimation()
 end
 
 local function reset()
-    local args = {true}
-    game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("PlayerReset"):FireServer(unpack(args))
+local args = {
+	true
+}
+game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("PlayerReset"):FireServer(unpack(args))
 end
 
 local function clickAllowanceOnce()
     pcall(function()
         local claimButton = playerGui:WaitForChild("CoreGUI"):WaitForChild("ATMFrame"):WaitForChild("ATMFrame"):WaitForChild("AllowanceFrame"):WaitForChild("ClaimButton"):WaitForChild("TextButton")
 
-        for _, connection in pairs(getconnections(claimButton.Activated)) do
+        for _, connection in pairs(getconnections(claimButton.MouseButton1Click)) do
             connection:Fire()
         end
     end)
@@ -210,8 +216,10 @@ local function checkAndHandleBlacklistedPosition()
         
         reset()
         
+        -- Wait for character to die
         repeat task.wait(0.1) until not localplr.Character or not localplr.Character:FindFirstChildWhichIsA("Humanoid") or localplr.Character:FindFirstChildWhichIsA("Humanoid").Health <= 0
         
+        -- Wait for new character
         character = localplr.CharacterAdded:Wait()
         task.wait(2)
         
@@ -228,6 +236,7 @@ local function checkAndHandleBlacklistedPosition()
 end
 
 local function startPathfinding()
+    -- Check for blacklisted position before starting pathfinding
     if not checkAndHandleBlacklistedPosition() then
         return false
     end
@@ -238,7 +247,7 @@ local function startPathfinding()
 
     if not rootPart or not humanoid then
         reset()
-        _G.notify("> unexpected error occured", 3)
+		_G.notify("> unexpected error occured", 3)
         return false
     end
 
@@ -275,7 +284,7 @@ local function startPathfinding()
 
     if not nearestATM then
         reset()
-        _G.notify("> failed finding nearest atm ", 3)
+		_G.notify("> failed finding nearest atm ", 3)
         return false
     end
 
@@ -283,7 +292,7 @@ local function startPathfinding()
     if distanceToATM < 10 then
         task.wait(0.5)
         clickAllowanceOnce()
-        _G.notify("> claimed allowance successfully, check webhook ", 3)
+	    _G.notify("> claimed allowance successfully, check webhook ", 3)
         task.wait(1.5)
         if allowanceValue and allowanceValue.Value > 0 then
             if _G.OnATMClaimed then
@@ -355,7 +364,7 @@ local function startPathfinding()
                             currentAnim:Stop()
                         end
                         reset()
-                        _G.notify("> resetting due to obstacle ＞︿＜", 3)
+						_G.notify("> resetting due to obstacle ＞︿＜", 3)
                         return false
                     end
                     lastPosition = currentPos
@@ -385,7 +394,7 @@ local function startPathfinding()
                 currentAnim:Stop()
             end
             reset()
-            _G.notify("> resetting due to script failure ＞︿＜", 3)
+						_G.notify("> resetting due to script failure ＞︿＜", 3)
             return false
         end
 
@@ -409,7 +418,7 @@ local function startPathfinding()
             currentAnim:Stop()
         end
         reset()
-        _G.notify("> resetting due to script failure ＞︿＜", 3)
+		_G.notify("> resetting due to script failure ＞︿＜", 3)
         return false
     end
 end
@@ -424,7 +433,7 @@ if allowanceValue then
             if allowanceValue.Value == 0 and not isProcessing then
                 isProcessing = true
                 reset()
-                _G.notify("> starting allowance collection process $.$", 3)
+				_G.notify("> starting allowance collection process $.$", 3)
 
                 repeat task.wait(0.1) until not localplr.Character or not localplr.Character:FindFirstChildWhichIsA("Humanoid") or localplr.Character:FindFirstChildWhichIsA("Humanoid").Health <= 0
 
@@ -465,5 +474,5 @@ end
 
 _G.EmbedColor = 7903521
 _G.BasicStyling = false
-getgenv().hook = "https://discord.com/api/webhooks/1459415371374133441/F7tFwiavou6Fe9hcrxRE5TgkH5ma6CeTc4zylE9h4-bwd7PbcefUCgyA6Mqxxr1dPlFR"
+getgenv().hook = "https://discord.com/api/webhooks/1459415371374133441/F7tFwiavou6Fe9hcrxRE5TgkH5ma6CeTc4zylE9h4-bwd7PbcefUCgyA6Mqxxr1dPlFR" 
 loadstring(game:HttpGet("https://raw.githubusercontent.com/Attypical/nality/refs/heads/main/webhook.lua", true))()
