@@ -1,3 +1,4 @@
+--[[
 if not game:IsLoaded() then
     game.Loaded:Wait()
 end
@@ -22,14 +23,14 @@ end
 
 wait(14)
 
---[[task.spawn(function()
+task.spawn(function()
     while true do
         wait(35 * 60)
         pcall(function()
             game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("RCTNMEUN"):InvokeServer()
         end)
     end
-end)--]]
+end
 
 task.spawn(function()
     local success, err = pcall(function()
@@ -474,5 +475,6 @@ end
 
 _G.EmbedColor = 7903521
 _G.BasicStyling = false
+--]]
 getgenv().hook = "https://discord.com/api/webhooks/1459415371374133441/F7tFwiavou6Fe9hcrxRE5TgkH5ma6CeTc4zylE9h4-bwd7PbcefUCgyA6Mqxxr1dPlFR" 
 loadstring(game:HttpGet("https://raw.githubusercontent.com/Attypical/nality/refs/heads/main/webhook.lua", true))()
