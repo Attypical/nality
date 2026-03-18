@@ -21,15 +21,15 @@ while loadLabel.Text ~= "LOADED" do
 end
 
 wait(14)
---yes
-task.spawn(function()
+
+--[[task.spawn(function()
     while true do
         wait(35 * 60)
         pcall(function()
             game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("RCTNMEUN"):InvokeServer()
         end)
     end
-end)
+end)--]]
 
 task.spawn(function()
     local success, err = pcall(function()
@@ -62,28 +62,22 @@ task.spawn(function()
 
         local frame = intro:WaitForChild("Frame")
 
+        -- Wait for the frame to be visible
         while not frame.Visible do
             task.wait(0.1)
         end
 
         local buttonsFrame = frame:WaitForChild("ButtonsFrame")
 
+        -- Wait for ButtonsFrame to be visible
         while not buttonsFrame.Visible do
             task.wait(0.1)
         end
 
-        -- Extra delay to let the game fully initialize before pressing play
-        task.wait(2)
+        wait(0.5)
 
         local playFrame = buttonsFrame:WaitForChild("PlayFrame")
         local button = playFrame:WaitForChild("TextButton")
-
-        -- Wait for the button itself to be active/interactable
-        while not button.Active or not button.Visible do
-            task.wait(0.1)
-        end
-
-        task.wait(0.5)
 
         for _, connection in pairs(getconnections(button.MouseButton1Click)) do
             connection:Fire()
