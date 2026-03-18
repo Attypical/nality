@@ -22,14 +22,14 @@ end
 
 wait(14)
 
-task.spawn(function()
+--[[task.spawn(function()
     while true do
         wait(35 * 60)
         pcall(function()
             game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("RCTNMEUN"):InvokeServer()
         end)
     end
-end)
+end)--]]
 
 task.spawn(function()
     local success, err = pcall(function()
