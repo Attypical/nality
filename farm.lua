@@ -36,7 +36,7 @@ task.spawn(function()
         wait(0.3)
 
         local closeButton = frame:WaitForChild("CloseButton")
-        firesignal(closeButton.MouseButton1Click)
+        pcall(firesignal, closeButton.MouseButton1Click)
     end)
 end)
 
@@ -63,7 +63,7 @@ task.spawn(function()
 
         local playFrame = buttonsFrame:WaitForChild("PlayFrame")
         local button = playFrame:WaitForChild("TextButton")
-        firesignal(button.MouseButton1Click)
+        pcall(firesignal, button.MouseButton1Click)
     end)
 end)
 
@@ -81,7 +81,7 @@ task.spawn(function()
         wait(0.3)
 
         local returnButton = frame:WaitForChild("ReturnButton"):WaitForChild("TextButton")
-        firesignal(returnButton.MouseButton1Click)
+        pcall(firesignal, returnButton.MouseButton1Click)
     end)
 end)
 
@@ -166,7 +166,7 @@ end
 local function clickAllowanceOnce()
     pcall(function()
         local claimButton = playerGui:WaitForChild("CoreGUI"):WaitForChild("ATMFrame"):WaitForChild("ATMFrame"):WaitForChild("AllowanceFrame"):WaitForChild("ClaimButton"):WaitForChild("TextButton")
-        firesignal(claimButton.MouseButton1Click)
+        pcall(firesignal, claimButton.MouseButton1Click)
     end)
 end
 
