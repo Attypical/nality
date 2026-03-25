@@ -30,10 +30,10 @@ _G.OnATMClaimed = function()
  
     if allowancesClaimed >= 2 then
         allowancesClaimed = 0
+		wait(5)
         pcall(function()
             game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("RCTNMEUN"):InvokeServer()
         end)
-        _G.notify("> RCTNMEUN fired after 2 allowances!", 2)
     end
 end
  
