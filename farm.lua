@@ -23,29 +23,11 @@ end
 wait(14)
 
 task.spawn(function()
-    local allowancesClaimed = 0
-
-    _G.OnATMClaimed = function()
-        allowancesClaimed = allowancesClaimed + 1
-        _G.notify("> allowance " .. allowancesClaimed .. "/4 claimed!", 2)
-
-        if allowancesClaimed >= 4 then
-            _G.notify("> 4 allowances claimed, serverhopping...", 3)
-            task.wait(2)
-            local rs = game:GetService("ReplicatedStorage")
-            local events = rs:WaitForChild("Events", 10)
-            if events then
-                local remote = events:FindFirstChild("RCTNMEUN")
-                if remote then
-                    pcall(function()
-                        remote:InvokeServer()
-                    end)
-                else
-                    _G.notify("> RCTNMEUN remote not found!", 3)
-                end
-            end
-            allowancesClaimed = 0 -- reset for next server
-        end
+    while true do
+        wait(50 * 60)
+        pcall(function()
+            game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("RCTNMEUN"):InvokeServer()
+        end)
     end
 end)
 
@@ -291,9 +273,11 @@ local function startPathfinding()
         clickAllowanceOnce()
         _G.notify("> claimed allowance successfully, check webhook ", 3)
         task.wait(1.5)
- if _G.OnATMClaimed then
-    _G.OnATMClaimed()
-end
+        if allowanceValue and allowanceValue.Value > 0 then
+            if _G.OnATMClaimed then
+                _G.OnATMClaimed()
+            end
+        end
         return true
     end
 
