@@ -23,11 +23,19 @@ end
 wait(14)
 
 task.spawn(function()
-    while true do
-        wait(50 * 60)
-        pcall(function()
-            game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("RCTNMEUN"):InvokeServer()
-        end)
+    local allowancesClaimed = 0
+
+    _G.OnATMClaimed = function()
+        allowancesClaimed = allowancesClaimed + 1
+        _G.notify("> allowance " .. allowancesClaimed .. "/4 claimed!", 2)
+
+        if allowancesClaimed >= 4 then
+            _G.notify("> 4 allowances claimed, serverhopping...", 3)
+            wait(2)
+            pcall(function()
+                game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("RCTNMEUN"):InvokeServer()
+            end)
+        end
     end
 end)
 
