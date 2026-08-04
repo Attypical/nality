@@ -173,16 +173,12 @@ end
 local function clickAllowanceOnce()
     local success, err = pcall(function()
         local coreGui = playerGui:WaitForChild("CoreGUI", 5)
-        if not coreGui then error("CoreGUI not found") end
  
         local atmFrame1 = coreGui:WaitForChild("ATMFrame", 5)
-        if not atmFrame1 then error("ATMFrame (outer) not found") end
  
         local atmFrame2 = atmFrame1:WaitForChild("ATMFrame", 5)
-        if not atmFrame2 then error("ATMFrame (inner) not found") end
  
         local allowanceFrame = atmFrame2:WaitForChild("AllowanceFrame", 5)
-        if not allowanceFrame then error("AllowanceFrame not found") end
  
         local waited = 0
         while not allowanceFrame.Visible and waited < 3 do
@@ -191,19 +187,10 @@ local function clickAllowanceOnce()
         end
  
         local claimButton = allowanceFrame:WaitForChild("ClaimButton", 5)
-        if not claimButton then error("ClaimButton not found") end
  
         local textButton = claimButton:WaitForChild("TextButton", 5)
-        if not textButton then error("TextButton not found") end
- 
-        if not textButton.Visible then
-            error("ClaimButton TextButton not visible")
-        end
  
         local fired = pcall(firesignal, textButton.MouseButton1Click)
-        if not fired then
-            error("firesignal failed on claim button")
-        end
     end)
  
     return success
