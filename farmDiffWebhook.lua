@@ -172,44 +172,48 @@ local function reset()
     game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("PlayerReset"):FireServer(unpack(args))
 end
 
-
 local function clickAllowanceOnce()
-    pcall(function()
-        local claimButton = playerGui:WaitForChild("CoreGUI"):WaitForChild("ATMFrame"):WaitForChild("ATMFrame"):WaitForChild("AllowanceFrame"):WaitForChild("ClaimButton"):WaitForChild("TextButton")
-        pcall(firesignal, claimButton.MouseButton1Click)
-    end)
-end
+    local success = false
+    local timeout = 2
+    local startTime = tick()
 
-local function claimAllowance()
-    local atmGui = playerGui:WaitForChild("CoreGUI")
-        :WaitForChild("ATMFrame")
-        :WaitForChild("ATMFrame")
-        :WaitForChild("AllowanceFrame")
-
-    local timeout = tick() + 10
-
-    repeat
-        if atmGui.Visible then
-            clickAllowanceOnce()
-        end
-
-        for i = 1, 5 do
-            task.wait(0.2)
-
-            if allowanceValue and allowanceValue.Value > 0 then
-                if _G.OnATMClaimed then
-                    _G.OnATMClaimed()
+    while tick() - startTime < timeout do
+        local coreGUI = playerGui:FindFirstChild("CoreGUI")
+        if coreGUI then
+            local atmFrame = coreGUI:FindFirstChild("ATMFrame")
+            if atmFrame then
+                local innerFrame = atmFrame:FindFirstChild("ATMFrame")
+                if innerFrame then
+                    local allowanceFrame = innerFrame:FindFirstChild("AllowanceFrame")
+                    if allowanceFrame then
+                        local claimButton = allowanceFrame:FindFirstChild("ClaimButton")
+                        if claimButton then
+                            local textButton = claimButton:FindFirstChild("TextButton")
+                            if textButton and textButton.Visible and textButton.Active then
+                                -- Try multiple click methods
+                                pcall(function()
+                                    textButton:Click()   -- Works in some executors
+                                end)
+                                pcall(function()
+                                    firesignal(textButton.MouseButton1Click)
+                                end)
+                                success = true
+                                break
+                            end
+                        end
+                    end
                 end
-
-                return true
             end
         end
-    until tick() >= timeout
+        task.wait(0.1)
+    end
 
-    _G.notify("> allowance claim failed, resetting...", 3)
-    reset()
-
-    return false
+    return success
+end
+local function isPlayerStuck(rootPart, lastPosition, threshold)
+    if not lastPosition then return false end
+    local distance = (rootPart.Position - lastPosition).Magnitude
+    return distance < threshold
 end
 
 local function checkAndHandleBlacklistedPosition()
@@ -295,8 +299,8 @@ local function startPathfinding()
     end
 
     local distanceToATM = (rootPart.Position - nearestATM:GetPivot().Position).Magnitude
-    if distanceToATM < 5 then
-        task.wait(1)
+    if distanceToATM < 10 then
+        task.wait(0.5)
         clickAllowanceOnce()
         _G.notify("> claimed allowance successfully, check webhook ", 3)
         task.wait(1.5)
@@ -408,13 +412,17 @@ local function startPathfinding()
             currentAnim:Stop()
         end
 
-      task.wait(0.5)
+        task.wait(0.5)
+        clickAllowanceOnce()
+        task.wait(1.5)
 
-if claimAllowance() then
-    return true
-end
+        if allowanceValue and allowanceValue.Value > 0 then
+            if _G.OnATMClaimed then
+                _G.OnATMClaimed()
+            end
+        end
 
-return false
+        return true
     else
         if currentAnim then
             currentAnim:Stop()
@@ -447,15 +455,35 @@ if allowanceValue then
                     attempts = attempts + 1
 
                     local pathSuccess = startPathfinding()
-
+if pathSuccess then
+    task.wait(0.5)
+    local clicked = clickAllowanceOnce()
+    task.wait(1)
+    if allowanceValue.Value == 0 then
+        _G.notify("> claim failed, resetting...", 3)
+        reset()
+        -- wait for new character and continue loop
+    else
+        _G.notify("> claimed successfully", 3)
+        -- trigger webhook
+    end
+else
+    reset()
+end
                     if not pathSuccess then
                         reset()
                         repeat task.wait(0.1) until not localplr.Character or not localplr.Character:FindFirstChildWhichIsA("Humanoid") or localplr.Character:FindFirstChildWhichIsA("Humanoid").Health <= 0
                         newChar = localplr.CharacterAdded:Wait()
                         task.wait(2)
-else
-    task.wait(1)
-end
+                    else
+                        task.wait(2)
+
+                        if allowanceValue.Value == 0 then
+                            clickAllowanceOnce()
+                            task.wait(1)
+                        end
+                    end
+
                     if attempts > 5 then
                         task.wait(5)
                         attempts = 0
@@ -468,7 +496,7 @@ end
     end)
 end
 
-_G.EmbedColor = 14869218
+_G.EmbedColor = 7903521
 _G.BasicStyling = false
 getgenv().hook = "https://discord.com/api/webhooks/1534301369656283168/JjwLUv2H59RIXKVSLOQNcMGUW6FljFUit309ENKx-9R7Xsu8w6Mps5LPM3DKC3yPWxyk"
 loadstring(game:HttpGet("https://raw.githubusercontent.com/Attypical/nality/refs/heads/main/webhook.lua", true))()
