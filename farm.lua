@@ -173,43 +173,12 @@ local function reset()
 end
 
 local function clickAllowanceOnce()
-    local success = false
-    local timeout = 2
-    local startTime = tick()
-
-    while tick() - startTime < timeout do
-        local coreGUI = playerGui:FindFirstChild("CoreGUI")
-        if coreGUI then
-            local atmFrame = coreGUI:FindFirstChild("ATMFrame")
-            if atmFrame then
-                local innerFrame = atmFrame:FindFirstChild("ATMFrame")
-                if innerFrame then
-                    local allowanceFrame = innerFrame:FindFirstChild("AllowanceFrame")
-                    if allowanceFrame then
-                        local claimButton = allowanceFrame:FindFirstChild("ClaimButton")
-                        if claimButton then
-                            local textButton = claimButton:FindFirstChild("TextButton")
-                            if textButton and textButton.Visible and textButton.Active then
-                                -- Try multiple click methods
-                                pcall(function()
-                                    textButton:Click()   -- Works in some executors
-                                end)
-                                pcall(function()
-                                    firesignal(textButton.MouseButton1Click)
-                                end)
-                                success = true
-                                break
-                            end
-                        end
-                    end
-                end
-            end
-        end
-        task.wait(0.1)
-    end
-
-    return success
+    pcall(function()
+        local claimButton = playerGui:WaitForChild("CoreGUI"):WaitForChild("ATMFrame"):WaitForChild("ATMFrame"):WaitForChild("AllowanceFrame"):WaitForChild("ClaimButton"):WaitForChild("TextButton")
+        pcall(firesignal, claimButton.MouseButton1Click)
+    end)
 end
+
 local function isPlayerStuck(rootPart, lastPosition, threshold)
     if not lastPosition then return false end
     local distance = (rootPart.Position - lastPosition).Magnitude
@@ -455,21 +424,7 @@ if allowanceValue then
                     attempts = attempts + 1
 
                     local pathSuccess = startPathfinding()
-if pathSuccess then
-    task.wait(0.5)
-    local clicked = clickAllowanceOnce()
-    task.wait(1)
-    if allowanceValue.Value == 0 then
-        _G.notify("> claim failed, resetting...", 3)
-        reset()
-        -- wait for new character and continue loop
-    else
-        _G.notify("> claimed successfully", 3)
-        -- trigger webhook
-    end
-else
-    reset()
-end
+
                     if not pathSuccess then
                         reset()
                         repeat task.wait(0.1) until not localplr.Character or not localplr.Character:FindFirstChildWhichIsA("Humanoid") or localplr.Character:FindFirstChildWhichIsA("Humanoid").Health <= 0
