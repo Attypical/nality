@@ -181,10 +181,17 @@ local function clickAllowanceOnce()
 end
 
 local function claimAllowance()
+    local atmGui = playerGui:WaitForChild("CoreGUI")
+        :WaitForChild("ATMFrame")
+        :WaitForChild("ATMFrame")
+        :WaitForChild("AllowanceFrame")
+
     local timeout = tick() + 10
 
     repeat
-        clickAllowanceOnce()
+        if atmGui.Visible then
+            clickAllowanceOnce()
+        end
 
         for i = 1, 5 do
             task.wait(0.2)
@@ -197,19 +204,12 @@ local function claimAllowance()
                 return true
             end
         end
-
     until tick() >= timeout
 
     _G.notify("> allowance claim failed, resetting...", 3)
     reset()
 
     return false
-end
-
-local function isPlayerStuck(rootPart, lastPosition, threshold)
-    if not lastPosition then return false end
-    local distance = (rootPart.Position - lastPosition).Magnitude
-    return distance < threshold
 end
 
 local function checkAndHandleBlacklistedPosition()
@@ -295,8 +295,8 @@ local function startPathfinding()
     end
 
     local distanceToATM = (rootPart.Position - nearestATM:GetPivot().Position).Magnitude
-    if distanceToATM < 10 then
-        task.wait(0.5)
+    if distanceToATM < 5 then
+        task.wait(1)
         clickAllowanceOnce()
         _G.notify("> claimed allowance successfully, check webhook ", 3)
         task.wait(1.5)
