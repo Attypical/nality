@@ -116,15 +116,18 @@ for _, child in ipairs(game:GetChildren()) do
 end
 
 local allowanceValue = nil
-if replicatedStorage then
+
+-- NEW: centralized so it can be re-resolved after character/data resets
+local function refreshAllowanceValue()
+    if not replicatedStorage then return end
     local playerDB = replicatedStorage:FindFirstChild("PlayerbaseData2")
-    if playerDB then
-        local playerData = playerDB:FindFirstChild(localplr.Name)
-        if playerData then
-            allowanceValue = playerData:FindFirstChild("NextAllowance")
-        end
-    end
+    if not playerDB then return end
+    local playerData = playerDB:FindFirstChild(localplr.Name)
+    if not playerData then return end
+    allowanceValue = playerData:FindFirstChild("NextAllowance")
 end
+
+refreshAllowanceValue()
 
 local blacklistedPositions = {
     {position = Vector3.new(-4920.67724609375, 1.3235726356506348, -164.5072021484375), radius = 5},
@@ -172,11 +175,36 @@ local function reset()
     game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("PlayerReset"):FireServer(unpack(args))
 end
 
+-- CHANGED: returns whether the click actually happened (button was found & fired),
+-- not just "we tried". This alone doesn't prove the server accepted it, so it's
+-- paired with a value-check in attemptClaimAndVerify() below.
 local function clickAllowanceOnce()
-    pcall(function()
+    local ok = pcall(function()
         local claimButton = playerGui:WaitForChild("CoreGUI"):WaitForChild("ATMFrame"):WaitForChild("ATMFrame"):WaitForChild("AllowanceFrame"):WaitForChild("ClaimButton"):WaitForChild("TextButton")
-        pcall(firesignal, claimButton.MouseButton1Click)
+        local fired = pcall(firesignal, claimButton.MouseButton1Click)
+        if not fired then
+            error("firesignal failed")
+        end
     end)
+    return ok
+end
+
+-- NEW: retries the click a few times and confirms allowanceValue actually
+-- changed before reporting success. This is the core fix.
+local function attemptClaimAndVerify()
+    for attempt = 1, 3 do
+        clickAllowanceOnce()
+        task.wait(1)
+
+        refreshAllowanceValue()
+
+        if allowanceValue and allowanceValue.Value > 0 then
+            return true
+        end
+
+        task.wait(0.5)
+    end
+    return false
 end
 
 local function isPlayerStuck(rootPart, lastPosition, threshold)
@@ -270,15 +298,20 @@ local function startPathfinding()
     local distanceToATM = (rootPart.Position - nearestATM:GetPivot().Position).Magnitude
     if distanceToATM < 10 then
         task.wait(0.5)
-        clickAllowanceOnce()
-        _G.notify("> claimed allowance successfully, check webhook ", 3)
-        task.wait(1.5)
-        if allowanceValue and allowanceValue.Value > 0 then
+
+        -- CHANGED: verify before declaring success; reset on failure
+        local claimed = attemptClaimAndVerify()
+        if claimed then
+            _G.notify("> claimed allowance successfully, check webhook ", 3)
             if _G.OnATMClaimed then
                 _G.OnATMClaimed()
             end
+            return true
+        else
+            _G.notify("> claim failed at ATM, resetting...", 3)
+            reset()
+            return false
         end
-        return true
     end
 
     local currentAnim = playAnimation()
@@ -382,16 +415,19 @@ local function startPathfinding()
         end
 
         task.wait(0.5)
-        clickAllowanceOnce()
-        task.wait(1.5)
 
-        if allowanceValue and allowanceValue.Value > 0 then
+        -- CHANGED: verify before declaring success; reset on failure
+        local claimed = attemptClaimAndVerify()
+        if claimed then
             if _G.OnATMClaimed then
                 _G.OnATMClaimed()
             end
+            return true
+        else
+            _G.notify("> claim failed at ATM, resetting...", 3)
+            reset()
+            return false
         end
-
-        return true
     else
         if currentAnim then
             currentAnim:Stop()
@@ -419,6 +455,10 @@ if allowanceValue then
                 local newChar = localplr.CharacterAdded:Wait()
                 task.wait(2)
 
+                -- NEW: re-resolve allowanceValue in case the instance was
+                -- recreated (not just mutated) after the reset
+                refreshAllowanceValue()
+
                 local attempts = 0
                 while allowanceValue.Value == 0 do
                     attempts = attempts + 1
@@ -430,13 +470,11 @@ if allowanceValue then
                         repeat task.wait(0.1) until not localplr.Character or not localplr.Character:FindFirstChildWhichIsA("Humanoid") or localplr.Character:FindFirstChildWhichIsA("Humanoid").Health <= 0
                         newChar = localplr.CharacterAdded:Wait()
                         task.wait(2)
+                        refreshAllowanceValue()
                     else
                         task.wait(2)
-
-                        if allowanceValue.Value == 0 then
-                            clickAllowanceOnce()
-                            task.wait(1)
-                        end
+                        -- pathSuccess now only means "claim was verified",
+                        -- so no extra unverified click-and-hope here anymore.
                     end
 
                     if attempts > 5 then
