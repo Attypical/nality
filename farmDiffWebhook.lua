@@ -245,7 +245,25 @@ local function checkAndHandleBlacklistedPosition()
 
     return true
 end
+local function claimWithRetry(maxAttempts, delayBetween)
+    maxAttempts = maxAttempts or 5
+    delayBetween = delayBetween or 0.5
 
+    for attempt = 1, maxAttempts do
+        local clicked = clickAllowanceOnce()   -- your existing function (2s timeout)
+        task.wait(delayBetween)                -- give the game time to process
+
+        -- If the allowance is now > 0, we're done
+        if allowanceValue and allowanceValue.Value > 0 then
+            _G.notify("> claimed on attempt " .. attempt, 2)
+            return true
+        end
+
+        _G.notify("> attempt " .. attempt .. " failed, retrying...", 2)
+    end
+
+    return false
+end
 local function startPathfinding()
     if not checkAndHandleBlacklistedPosition() then
         return false
@@ -301,15 +319,15 @@ local function startPathfinding()
     local distanceToATM = (rootPart.Position - nearestATM:GetPivot().Position).Magnitude
     if distanceToATM < 10 then
         task.wait(0.5)
-        clickAllowanceOnce()
-        _G.notify("> claimed allowance successfully, check webhook ", 3)
-        task.wait(1.5)
-        if allowanceValue and allowanceValue.Value > 0 then
-            if _G.OnATMClaimed then
-                _G.OnATMClaimed()
-            end
-        end
-        return true
+if claimWithRetry() then
+    _G.notify("> claimed successfully", 3)
+    if _G.OnATMClaimed then _G.OnATMClaimed() end
+    return true
+else
+    _G.notify("> claim failed after retries, resetting...", 3)
+    reset()
+    return false
+end
     end
 
     local currentAnim = playAnimation()
@@ -412,17 +430,16 @@ local function startPathfinding()
             currentAnim:Stop()
         end
 
-        task.wait(0.5)
-        clickAllowanceOnce()
-        task.wait(1.5)
-
-        if allowanceValue and allowanceValue.Value > 0 then
-            if _G.OnATMClaimed then
-                _G.OnATMClaimed()
-            end
-        end
-
-        return true
+task.wait(0.5)
+if claimWithRetry() then
+    _G.notify("> claimed successfully", 3)
+    if _G.OnATMClaimed then _G.OnATMClaimed() end
+    return true
+else
+    _G.notify("> claim failed after retries, resetting...", 3)
+    reset()
+    return false
+end
     else
         if currentAnim then
             currentAnim:Stop()
@@ -452,23 +469,29 @@ if allowanceValue then
 
                 local attempts = 0
                 while allowanceValue.Value == 0 do
-                    attempts = attempts + 1
+    attempts = attempts + 1
 
-                    local pathSuccess = startPathfinding()
-if pathSuccess then
-    task.wait(0.5)
-    local clicked = clickAllowanceOnce()
-    task.wait(1)
-    if allowanceValue.Value == 0 then
-        _G.notify("> claim failed, resetting...", 3)
-        reset()
-        -- wait for new character and continue loop
+    local pathSuccess = startPathfinding()   -- this now returns true only if claimed
+
+    if pathSuccess then
+        -- claimed successfully, break out
+        _G.notify("> allowance claimed, exiting loop", 3)
+        break
     else
-        _G.notify("> claimed successfully", 3)
-        -- trigger webhook
+        -- pathfinding or claiming failed, reset and retry
+        _G.notify("> restarting process...", 2)
+        reset()
+
+        -- Wait for character to die and respawn
+        repeat task.wait(0.1) until not localplr.Character or not localplr.Character:FindFirstChildWhichIsA("Humanoid")
+        local newChar = localplr.CharacterAdded:Wait()
+        task.wait(2)
     end
-else
-    reset()
+
+    if attempts > 5 then
+        task.wait(5)
+        attempts = 0
+    end
 end
                     if not pathSuccess then
                         reset()
