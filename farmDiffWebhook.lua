@@ -98,30 +98,14 @@ end)
 local PathfindingService = game:GetService("PathfindingService")
 local VirtualInputManager = game:GetService("VirtualInputManager")
 
--- NEW: lets the claim routine pause this spam loop so it can't close/reopen
--- the ATM GUI out from under a click attempt
-_G.SuppressAutoInteract = false
-
 task.spawn(function()
     while true do
-        if not _G.SuppressAutoInteract then
-            VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.E, false, game)
-            wait(1)
-            VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.E, false, game)
-            wait(1)
-        else
-            wait(0.2)
-        end
+        VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.E, false, game)
+        wait(1)
+        VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.E, false, game)
+        wait(1)
     end
 end)
-
--- NEW: presses E once, used deliberately by the claim routine rather than
--- relying on the timing of the background spam loop above
-local function pressInteractOnce()
-    VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.E, false, game)
-    task.wait(0.15)
-    VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.E, false, game)
-end
 
 local replicatedStorage = nil
 for _, child in ipairs(game:GetChildren()) do
@@ -131,42 +115,16 @@ for _, child in ipairs(game:GetChildren()) do
     end
 end
 
--- NEW: central debug print, prefixed and timestamped so it's easy to grep
--- in the console. Set _G.DebugEnabled = false to silence it without
--- removing calls.
-_G.DebugEnabled = true
-local function print(...)
-    if not _G.DebugEnabled then return end
-    local parts = {...}
-    for i, v in ipairs(parts) do
-        parts[i] = tostring(v)
-    end
-    print(("[DEBUG %.2f] "):format(tick()) .. table.concat(parts, " "))
-end
-
 local allowanceValue = nil
-
--- NEW: centralized so it can be re-resolved after character/data resets
-local function refreshAllowanceValue()
-    if not replicatedStorage then
-        print("refreshAllowanceValue: replicatedStorage is nil")
-        return
-    end
+if replicatedStorage then
     local playerDB = replicatedStorage:FindFirstChild("PlayerbaseData2")
-    if not playerDB then
-        print("refreshAllowanceValue: PlayerbaseData2 not found")
-        return
+    if playerDB then
+        local playerData = playerDB:FindFirstChild(localplr.Name)
+        if playerData then
+            allowanceValue = playerData:FindFirstChild("NextAllowance")
+        end
     end
-    local playerData = playerDB:FindFirstChild(localplr.Name)
-    if not playerData then
-        print("refreshAllowanceValue: playerData not found for", localplr.Name)
-        return
-    end
-    allowanceValue = playerData:FindFirstChild("NextAllowance")
-    print("refreshAllowanceValue: NextAllowance =", allowanceValue and allowanceValue.Value or "nil")
 end
-
-refreshAllowanceValue()
 
 local blacklistedPositions = {
     {position = Vector3.new(-4920.67724609375, 1.3235726356506348, -164.5072021484375), radius = 5},
@@ -214,89 +172,11 @@ local function reset()
     game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("PlayerReset"):FireServer(unpack(args))
 end
 
--- NEW: finds the ATM GUI chain and returns the frame + button ONLY if the
--- frame is actually visible. Returns nil if it isn't open yet, instead of
--- clicking blind.
-local function getVisibleClaimButton(timeout)
-    local deadline = tick() + (timeout or 5)
-
-    while tick() < deadline do
-        local coreGui = playerGui:FindFirstChild("CoreGUI")
-        local atmFrame = coreGui and coreGui:FindFirstChild("ATMFrame")
-        local innerFrame = atmFrame and atmFrame:FindFirstChild("ATMFrame")
-        local allowanceFrame = innerFrame and innerFrame:FindFirstChild("AllowanceFrame")
-        local claimButtonHolder = allowanceFrame and allowanceFrame:FindFirstChild("ClaimButton")
-        local button = claimButtonHolder and claimButtonHolder:FindFirstChild("TextButton")
-
-        if innerFrame and innerFrame.Visible and button then
-            print("getVisibleClaimButton: found visible button")
-            return button
-        end
-
-        task.wait(0.1)
-    end
-
-    print("getVisibleClaimButton: timed out after", timeout, "-- coreGui/frame/button not visible in time")
-    return nil
-end
-
--- CHANGED: no longer clicks blind. Waits for the GUI to actually be visible
--- (nudging it open with a real interact press if it isn't), and only then
--- fires the button. Returns false if the GUI never opened.
 local function clickAllowanceOnce()
-    print("clickAllowanceOnce: looking for claim button")
-    local button = getVisibleClaimButton(2)
-
-    if not button then
-        print("clickAllowanceOnce: not visible yet, pressing E to open ATM prompt")
-        pressInteractOnce()
-        button = getVisibleClaimButton(3)
-    end
-
-    if not button then
-        print("clickAllowanceOnce: gave up, button never became visible")
-        return false
-    end
-
-    local fired = pcall(firesignal, button.MouseButton1Click)
-    print("clickAllowanceOnce: fired MouseButton1Click, success =", fired)
-    return fired == true
-end
-
--- NEW: retries the click a few times and confirms allowanceValue actually
--- changed before reporting success. Pauses the background E-spam loop for
--- the duration so it can't close the GUI mid-attempt.
-local function attemptClaimAndVerify()
-    print("attemptClaimAndVerify: starting, suppressing auto-interact")
-    _G.SuppressAutoInteract = true
-
-    local result = false
-
-    for attempt = 1, 3 do
-        print("attemptClaimAndVerify: attempt", attempt)
-        local clicked = clickAllowanceOnce()
-
-        if clicked then
-            task.wait(1)
-            refreshAllowanceValue()
-
-            if allowanceValue and allowanceValue.Value > 0 then
-                print("attemptClaimAndVerify: value confirmed >0, claim verified on attempt", attempt)
-                result = true
-                break
-            else
-                print("attemptClaimAndVerify: clicked but value still 0, will retry")
-            end
-        else
-            _G.notify("> claim button not found/visible, retrying...", 2)
-        end
-
-        task.wait(0.5)
-    end
-
-    print("attemptClaimAndVerify: finished, result =", result)
-    _G.SuppressAutoInteract = false
-    return result
+    pcall(function()
+        local claimButton = playerGui:WaitForChild("CoreGUI"):WaitForChild("ATMFrame"):WaitForChild("ATMFrame"):WaitForChild("AllowanceFrame"):WaitForChild("ClaimButton"):WaitForChild("TextButton")
+        pcall(firesignal, claimButton.MouseButton1Click)
+    end)
 end
 
 local function isPlayerStuck(rootPart, lastPosition, threshold)
@@ -314,7 +194,6 @@ local function checkAndHandleBlacklistedPosition()
     end
 
     while isPositionBlacklisted(rootPart.Position) do
-        print("checkAndHandleBlacklistedPosition: spawn is blacklisted at", rootPart.Position)
         _G.notify("> bad spawn detected, resetting...", 2)
 
         reset()
@@ -337,10 +216,7 @@ local function checkAndHandleBlacklistedPosition()
 end
 
 local function startPathfinding()
-    print("startPathfinding: called")
-
     if not checkAndHandleBlacklistedPosition() then
-        print("startPathfinding: aborting, blacklist check failed")
         return false
     end
 
@@ -349,7 +225,6 @@ local function startPathfinding()
     local rootPart = character:FindFirstChild('HumanoidRootPart') or character:FindFirstChild('Torso')
 
     if not rootPart or not humanoid then
-        print("startPathfinding: missing rootPart or humanoid")
         reset()
         _G.notify("> unexpected error occured", 3)
         return false
@@ -361,7 +236,6 @@ local function startPathfinding()
     end
 
     if not atmFolder then
-        print("startPathfinding: ATMz folder not found")
         reset()
         return false
     end
@@ -388,33 +262,23 @@ local function startPathfinding()
     end
 
     if not nearestATM then
-        print("startPathfinding: nearestATM is nil out of", #atms, "candidates")
         reset()
         _G.notify("> failed finding nearest atm ", 3)
         return false
     end
 
     local distanceToATM = (rootPart.Position - nearestATM:GetPivot().Position).Magnitude
-    print("startPathfinding: nearest ATM at distance", distanceToATM)
-
     if distanceToATM < 10 then
-        print("startPathfinding: already close enough, attempting claim directly")
         task.wait(0.5)
-
-        -- CHANGED: verify before declaring success; reset on failure
-        local claimed = attemptClaimAndVerify()
-        if claimed then
-            _G.notify("> claimed allowance successfully, check webhook ", 3)
+        clickAllowanceOnce()
+        _G.notify("> claimed allowance successfully, check webhook ", 3)
+        task.wait(1.5)
+        if allowanceValue and allowanceValue.Value > 0 then
             if _G.OnATMClaimed then
                 _G.OnATMClaimed()
             end
-            return true
-        else
-            print("startPathfinding: claim failed on direct attempt")
-            _G.notify("> claim failed at ATM, resetting...", 3)
-            reset()
-            return false
         end
+        return true
     end
 
     local currentAnim = playAnimation()
@@ -432,11 +296,8 @@ local function startPathfinding()
         path:ComputeAsync(rootPart.Position, targetPosition)
     end)
 
-    print("startPathfinding: ComputeAsync success =", success, "status =", success and tostring(path.Status) or tostring(errorMessage))
-
     if success and path.Status == Enum.PathStatus.Success then
         local waypoints = path:GetWaypoints()
-        print("startPathfinding: got", #waypoints, "waypoints")
 
         local currentWaypointIndex = 1
         local lastPosition = rootPart.Position
@@ -478,7 +339,6 @@ local function startPathfinding()
 
                 if stuckCheckTimer >= 0.7 then
                     if isPlayerStuck(rootPart, lastPosition, 0.5) then
-                        print("startPathfinding: stuck at waypoint", currentWaypointIndex, "of", #waypoints)
                         if currentAnim then
                             currentAnim:Stop()
                         end
@@ -507,10 +367,8 @@ local function startPathfinding()
 
         task.wait(0.5)
         local finalDistance = (rootPart.Position - nearestATM:GetPivot().Position).Magnitude
-        print("startPathfinding: reached end of waypoints, finalDistance =", finalDistance)
 
         if finalDistance > 15 then
-            print("startPathfinding: finalDistance too far, treating as failure")
             if currentAnim then
                 currentAnim:Stop()
             end
@@ -524,22 +382,17 @@ local function startPathfinding()
         end
 
         task.wait(0.5)
+        clickAllowanceOnce()
+        task.wait(1.5)
 
-        -- CHANGED: verify before declaring success; reset on failure
-        local claimed = attemptClaimAndVerify()
-        if claimed then
+        if allowanceValue and allowanceValue.Value > 0 then
             if _G.OnATMClaimed then
                 _G.OnATMClaimed()
             end
-            return true
-        else
-            print("startPathfinding: claim failed after walking to ATM")
-            _G.notify("> claim failed at ATM, resetting...", 3)
-            reset()
-            return false
         end
+
+        return true
     else
-        print("startPathfinding: pathfinding failed, success =", success, "status =", success and tostring(path.Status) or "n/a")
         if currentAnim then
             currentAnim:Stop()
         end
@@ -558,7 +411,6 @@ if allowanceValue then
 
             if allowanceValue.Value == 0 and not isProcessing then
                 isProcessing = true
-                print("main loop: allowanceValue is 0, starting collection process")
                 reset()
                 _G.notify("> starting allowance collection process $.$", 3)
 
@@ -567,38 +419,32 @@ if allowanceValue then
                 local newChar = localplr.CharacterAdded:Wait()
                 task.wait(2)
 
-                -- NEW: re-resolve allowanceValue in case the instance was
-                -- recreated (not just mutated) after the reset
-                refreshAllowanceValue()
-
                 local attempts = 0
                 while allowanceValue.Value == 0 do
                     attempts = attempts + 1
-                    print("main loop: pathfinding attempt", attempts)
 
                     local pathSuccess = startPathfinding()
-                    print("main loop: startPathfinding returned", pathSuccess)
 
                     if not pathSuccess then
                         reset()
                         repeat task.wait(0.1) until not localplr.Character or not localplr.Character:FindFirstChildWhichIsA("Humanoid") or localplr.Character:FindFirstChildWhichIsA("Humanoid").Health <= 0
                         newChar = localplr.CharacterAdded:Wait()
                         task.wait(2)
-                        refreshAllowanceValue()
                     else
                         task.wait(2)
-                        -- pathSuccess now only means "claim was verified",
-                        -- so no extra unverified click-and-hope here anymore.
+
+                        if allowanceValue.Value == 0 then
+                            clickAllowanceOnce()
+                            task.wait(1)
+                        end
                     end
 
                     if attempts > 5 then
-                        print("main loop: hit attempt cap, cooling down 5s")
                         task.wait(5)
                         attempts = 0
                     end
                 end
 
-                print("main loop: allowanceValue.Value > 0, collection complete")
                 isProcessing = false
             end
         end
