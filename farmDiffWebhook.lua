@@ -1,14 +1,12 @@
 if not game:IsLoaded() then
     game.Loaded:Wait()
 end
-
 loadstring(game:HttpGet("https://raw.githubusercontent.com/Attypical/nality/refs/heads/main/notif.lua", true))()
-task.wait(2)
+wait(2)
 _G.notify("welcome! ヾ(•ω•`)o", 2)
-
 if game.PlaceId == 4588604953 then
-    _G.notify("> joining game...", 1)
-    game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Play"):InvokeServer("play", "Casual", nil, 1)
+	_G.notify("> joining game...", 1)
+	game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Play"):InvokeServer("play", "Casual", nil, 1)
 end
 
 local Players = game:GetService("Players")
@@ -18,94 +16,97 @@ local intro = playerGui:WaitForChild("Intro")
 local loadFrame = intro:WaitForChild("LoadFrame")
 local loadLabel = loadFrame:WaitForChild("LoadLabel")
 
--- Wait for LOADED with a safety timeout (30 seconds)
-local loadTimeout = 30
-while loadLabel.Text ~= "LOADED" and loadTimeout > 0 do
+while loadLabel.Text ~= "LOADED" do
     loadLabel:GetPropertyChangedSignal("Text"):Wait()
-    loadTimeout = loadTimeout - 1
 end
-task.wait(14)
 
--- Keep server alive (RCTNMEUN remote)
+wait(14)
+
 task.spawn(function()
     while true do
-        task.wait(50 * 60)
+        wait(50 * 60)
         pcall(function()
             game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("RCTNMEUN"):InvokeServer()
         end)
     end
 end)
 
--- Close PrimeBuyGUI if it appears
 task.spawn(function()
-    local primeGui = playerGui:FindFirstChild("PrimeBuyGUI")
-    if primeGui then
-        local frame = primeGui:FindFirstChild("Frame")
-        if frame and frame.Visible then
-            task.wait(0.3)
-            local closeButton = frame:FindFirstChild("CloseButton")
-            if closeButton then
-                pcall(firesignal, closeButton.MouseButton1Click)
-            end
+    local success, err = pcall(function()
+        local primeGui = playerGui:WaitForChild("PrimeBuyGUI", 10)
+        if not primeGui then return end
+
+        local frame = primeGui:WaitForChild("Frame")
+
+        while not frame.Visible do
+            task.wait(0.1)
         end
-    end
+
+        wait(0.3)
+
+        local closeButton = frame:WaitForChild("CloseButton")
+        pcall(firesignal, closeButton.MouseButton1Click)
+    end)
 end)
 
-task.wait(1)
+wait(1)
 
--- Click through Intro and CasualWarningGUI (safely)
 task.spawn(function()
-    local introGui = playerGui:FindFirstChild("Intro")
-    if introGui then
-        local frame = introGui:FindFirstChild("Frame")
-        if frame and frame.Visible then
-            local buttonsFrame = frame:FindFirstChild("ButtonsFrame")
-            if buttonsFrame and buttonsFrame.Visible then
-                task.wait(0.5)
-                local playFrame = buttonsFrame:FindFirstChild("PlayFrame")
-                if playFrame then
-                    local button = playFrame:FindFirstChild("TextButton")
-                    if button then
-                        pcall(firesignal, button.MouseButton1Click)
-                    end
-                end
-            end
+    local success, err = pcall(function()
+        local intro = playerGui:WaitForChild("Intro", 10)
+        if not intro then return end
+
+        local frame = intro:WaitForChild("Frame")
+
+        while not frame.Visible do
+            task.wait(0.1)
         end
-    end
+
+        local buttonsFrame = frame:WaitForChild("ButtonsFrame")
+
+        while not buttonsFrame.Visible do
+            task.wait(0.1)
+        end
+
+        wait(0.5)
+
+        local playFrame = buttonsFrame:WaitForChild("PlayFrame")
+        local button = playFrame:WaitForChild("TextButton")
+        pcall(firesignal, button.MouseButton1Click)
+    end)
 end)
 
 task.spawn(function()
-    local casualWarning = playerGui:FindFirstChild("CasualWarningGUI")
-    if casualWarning then
-        local frame = casualWarning:FindFirstChild("Frame")
-        if frame and frame.Visible then
-            task.wait(0.3)
-            local returnButton = frame:FindFirstChild("ReturnButton")
-            if returnButton then
-                local textButton = returnButton:FindFirstChild("TextButton")
-                if textButton then
-                    pcall(firesignal, textButton.MouseButton1Click)
-                end
-            end
+    local success, err = pcall(function()
+        local casualWarning = playerGui:WaitForChild("CasualWarningGUI", 10)
+        if not casualWarning then return end
+
+        local frame = casualWarning:WaitForChild("Frame")
+
+        while not frame.Visible do
+            task.wait(0.1)
         end
-    end
+
+        wait(0.3)
+
+        local returnButton = frame:WaitForChild("ReturnButton"):WaitForChild("TextButton")
+        pcall(firesignal, returnButton.MouseButton1Click)
+    end)
 end)
 
--- Services
+
 local PathfindingService = game:GetService("PathfindingService")
 local VirtualInputManager = game:GetService("VirtualInputManager")
 
--- Press E periodically to open ATMs (runs continuously)
 task.spawn(function()
     while true do
-        task.wait(2)
         VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.E, false, game)
-        task.wait(0.1)
+        wait(1)
         VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.E, false, game)
+        wait(1)
     end
 end)
 
--- Look up the allowance value using the game's specific folder name "RepIicatedStorage"
 local replicatedStorage = nil
 for _, child in ipairs(game:GetChildren()) do
     if child.Name == "RepIicatedStorage" then
@@ -125,7 +126,6 @@ if replicatedStorage then
     end
 end
 
--- Blacklisted spawn positions (exact coordinates from your script)
 local blacklistedPositions = {
     {position = Vector3.new(-4920.67724609375, 1.3235726356506348, -164.5072021484375), radius = 5},
     {position = Vector3.new(-4379.66943359375, 1.9842529296875, -1184.73193359375), radius = 5},
@@ -150,111 +150,71 @@ local function isPositionBlacklisted(position)
     return false
 end
 
--- Play an animation while walking (optional)
 local function playAnimation()
     local character = localplr.Character
     if not character then return end
+
     local humanoid = character:FindFirstChildWhichIsA("Humanoid")
     if not humanoid then return end
 
     local animation = Instance.new("Animation")
     animation.AnimationId = "rbxassetid://14694480722"
+
     local anim = humanoid:LoadAnimation(animation)
     anim.Priority = Enum.AnimationPriority.Movement
     anim:Play()
+
     return anim
 end
 
--- Reset the player's character
 local function reset()
-    game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("PlayerReset"):FireServer(true)
+    local args = {true}
+    game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("PlayerReset"):FireServer(unpack(args))
 end
 
--- Attempt to click the claim button once (with a 2‑second timeout)
 local function clickAllowanceOnce()
-    local success = false
-    local timeout = 2
-    local startTime = tick()
-
-    while tick() - startTime < timeout do
-        local coreGUI = playerGui:FindFirstChild("CoreGUI")
-        if coreGUI then
-            local atmFrame = coreGUI:FindFirstChild("ATMFrame")
-            if atmFrame then
-                local innerFrame = atmFrame:FindFirstChild("ATMFrame")
-                if innerFrame then
-                    local allowanceFrame = innerFrame:FindFirstChild("AllowanceFrame")
-                    if allowanceFrame then
-                        local claimButton = allowanceFrame:FindFirstChild("ClaimButton")
-                        if claimButton then
-                            local textButton = claimButton:FindFirstChild("TextButton")
-                            if textButton and textButton.Visible and textButton.Active then
-                                pcall(function()
-                                    textButton:Click()
-                                end)
-                                pcall(function()
-                                    firesignal(textButton.MouseButton1Click)
-                                end)
-                                success = true
-                                break
-                            end
-                        end
-                    end
-                end
-            end
-        end
-        task.wait(0.1)
-    end
-    return success
+    pcall(function()
+        local claimButton = playerGui:WaitForChild("CoreGUI"):WaitForChild("ATMFrame"):WaitForChild("ATMFrame"):WaitForChild("AllowanceFrame"):WaitForChild("ClaimButton"):WaitForChild("TextButton")
+        pcall(firesignal, claimButton.MouseButton1Click)
+    end)
 end
 
--- Retry clicking up to 5 times, checking allowance after each attempt
-local function claimWithRetry(maxAttempts, delayBetween)
-    maxAttempts = maxAttempts or 5
-    delayBetween = delayBetween or 0.5
-
-    for attempt = 1, maxAttempts do
-        clickAllowanceOnce()
-        task.wait(delayBetween)
-
-        if allowanceValue and allowanceValue.Value > 0 then
-            _G.notify("> claimed on attempt " .. attempt, 2)
-            return true
-        end
-        _G.notify("> attempt " .. attempt .. " failed, retrying...", 2)
-    end
-    return false
-end
-
--- Check if the player is stuck (movement < threshold)
 local function isPlayerStuck(rootPart, lastPosition, threshold)
     if not lastPosition then return false end
-    return (rootPart.Position - lastPosition).Magnitude < threshold
+    local distance = (rootPart.Position - lastPosition).Magnitude
+    return distance < threshold
 end
 
--- Handle bad spawn positions by resetting until a safe spot is found
 local function checkAndHandleBlacklistedPosition()
     local character = localplr.Character or localplr.CharacterAdded:Wait()
     local rootPart = character:FindFirstChild('HumanoidRootPart') or character:FindFirstChild('Torso')
-    if not rootPart then return false end
+
+    if not rootPart then
+        return false
+    end
 
     while isPositionBlacklisted(rootPart.Position) do
         _G.notify("> bad spawn detected, resetting...", 2)
+
         reset()
 
-        repeat task.wait(0.1) until not localplr.Character or not localplr.Character:FindFirstChildWhichIsA("Humanoid")
+        repeat task.wait(0.1) until not localplr.Character or not localplr.Character:FindFirstChildWhichIsA("Humanoid") or localplr.Character:FindFirstChildWhichIsA("Humanoid").Health <= 0
+
         character = localplr.CharacterAdded:Wait()
         task.wait(2)
 
         rootPart = character:FindFirstChild('HumanoidRootPart') or character:FindFirstChild('Torso')
-        if not rootPart then return false end
+
+        if not rootPart then
+            return false
+        end
     end
 
     _G.notify("> spawn position ok, proceeding!", 2)
+
     return true
 end
 
--- Main pathfinding and claiming logic
 local function startPathfinding()
     if not checkAndHandleBlacklistedPosition() then
         return false
@@ -263,6 +223,7 @@ local function startPathfinding()
     local character = localplr.Character or localplr.CharacterAdded:Wait()
     local humanoid = character:FindFirstChildOfClass('Humanoid')
     local rootPart = character:FindFirstChild('HumanoidRootPart') or character:FindFirstChild('Torso')
+
     if not rootPart or not humanoid then
         reset()
         _G.notify("> unexpected error occured", 3)
@@ -273,25 +234,27 @@ local function startPathfinding()
     if atmFolder then
         atmFolder = atmFolder:FindFirstChild("ATMz")
     end
+
     if not atmFolder then
         reset()
         return false
     end
 
-    -- Collect all ATM models
     local atms = {}
+
     for _, obj in ipairs(atmFolder:GetChildren()) do
         if obj:IsA("Model") and obj.Name == "ATM" then
             table.insert(atms, obj)
         end
     end
 
-    -- Find nearest ATM
     local nearestATM = nil
     local shortestDistance = math.huge
+
     for _, atm in ipairs(atms) do
         local atmPos = atm:GetPivot().Position
         local distance = (rootPart.Position - atmPos).Magnitude
+
         if distance < shortestDistance then
             shortestDistance = distance
             nearestATM = atm
@@ -304,25 +267,22 @@ local function startPathfinding()
         return false
     end
 
-    -- If already close, try to claim immediately
     local distanceToATM = (rootPart.Position - nearestATM:GetPivot().Position).Magnitude
     if distanceToATM < 10 then
         task.wait(0.5)
-        if claimWithRetry() then
-            _G.notify("> claimed successfully", 3)
-            if _G.OnATMClaimed then _G.OnATMClaimed() end
-            return true
-        else
-            _G.notify("> claim failed after retries, resetting...", 3)
-            reset()
-            return false
+        clickAllowanceOnce()
+        _G.notify("> claimed allowance successfully, check webhook ", 3)
+        task.wait(1.5)
+        if allowanceValue and allowanceValue.Value > 0 then
+            if _G.OnATMClaimed then
+                _G.OnATMClaimed()
+            end
         end
+        return true
     end
 
-    -- Play running animation
     local currentAnim = playAnimation()
 
-    -- Create path
     local path = PathfindingService:CreatePath({
         AgentRadius = 2,
         AgentHeight = 5,
@@ -331,23 +291,28 @@ local function startPathfinding()
     })
 
     local targetPosition = nearestATM:GetPivot().Position
+
     local success, errorMessage = pcall(function()
         path:ComputeAsync(rootPart.Position, targetPosition)
     end)
 
     if success and path.Status == Enum.PathStatus.Success then
         local waypoints = path:GetWaypoints()
+
         local currentWaypointIndex = 1
         local lastPosition = rootPart.Position
         local stuckCheckTimer = 0
 
         while currentWaypointIndex <= #waypoints do
             if not localplr.Character or not humanoid or humanoid.Health <= 0 then
-                if currentAnim then currentAnim:Stop() end
+                if currentAnim then
+                    currentAnim:Stop()
+                end
                 return false
             end
 
             local waypoint = waypoints[currentWaypointIndex]
+
             if waypoint.Action == Enum.PathWaypointAction.Jump then
                 humanoid.Jump = true
             end
@@ -363,7 +328,9 @@ local function startPathfinding()
                 stuckCheckTimer = stuckCheckTimer + 0.1
 
                 if not localplr.Character or not humanoid or humanoid.Health <= 0 then
-                    if currentAnim then currentAnim:Stop() end
+                    if currentAnim then
+                        currentAnim:Stop()
+                    end
                     return false
                 end
 
@@ -372,7 +339,9 @@ local function startPathfinding()
 
                 if stuckCheckTimer >= 0.7 then
                     if isPlayerStuck(rootPart, lastPosition, 0.5) then
-                        if currentAnim then currentAnim:Stop() end
+                        if currentAnim then
+                            currentAnim:Stop()
+                        end
                         reset()
                         _G.notify("> resetting due to obstacle ＞︿＜", 3)
                         return false
@@ -398,35 +367,41 @@ local function startPathfinding()
 
         task.wait(0.5)
         local finalDistance = (rootPart.Position - nearestATM:GetPivot().Position).Magnitude
+
         if finalDistance > 15 then
-            if currentAnim then currentAnim:Stop() end
+            if currentAnim then
+                currentAnim:Stop()
+            end
             reset()
             _G.notify("> resetting due to script failure ＞︿＜", 3)
             return false
         end
 
-        if currentAnim then currentAnim:Stop() end
-
-        -- Try to claim with retries
-        task.wait(0.5)
-        if claimWithRetry() then
-            _G.notify("> claimed successfully", 3)
-            if _G.OnATMClaimed then _G.OnATMClaimed() end
-            return true
-        else
-            _G.notify("> claim failed after retries, resetting...", 3)
-            reset()
-            return false
+        if currentAnim then
+            currentAnim:Stop()
         end
+
+        task.wait(0.5)
+        clickAllowanceOnce()
+        task.wait(1.5)
+
+        if allowanceValue and allowanceValue.Value > 0 then
+            if _G.OnATMClaimed then
+                _G.OnATMClaimed()
+            end
+        end
+
+        return true
     else
-        if currentAnim then currentAnim:Stop() end
+        if currentAnim then
+            currentAnim:Stop()
+        end
         reset()
         _G.notify("> resetting due to script failure ＞︿＜", 3)
         return false
     end
 end
 
--- Main allowance collection loop
 if allowanceValue then
     task.spawn(function()
         local isProcessing = false
@@ -436,11 +411,11 @@ if allowanceValue then
 
             if allowanceValue.Value == 0 and not isProcessing then
                 isProcessing = true
+                reset()
                 _G.notify("> starting allowance collection process $.$", 3)
 
-                -- Reset character to a fresh spawn
-                reset()
-                repeat task.wait(0.1) until not localplr.Character
+                repeat task.wait(0.1) until not localplr.Character or not localplr.Character:FindFirstChildWhichIsA("Humanoid") or localplr.Character:FindFirstChildWhichIsA("Humanoid").Health <= 0
+
                 local newChar = localplr.CharacterAdded:Wait()
                 task.wait(2)
 
@@ -448,17 +423,20 @@ if allowanceValue then
                 while allowanceValue.Value == 0 do
                     attempts = attempts + 1
 
-                    local pathSuccess = startPathfinding()   -- returns true only if claimed
+                    local pathSuccess = startPathfinding()
 
-                    if pathSuccess then
-                        _G.notify("> allowance claimed, exiting loop", 3)
-                        break
-                    else
-                        _G.notify("> restarting process...", 2)
+                    if not pathSuccess then
                         reset()
-                        repeat task.wait(0.1) until not localplr.Character
+                        repeat task.wait(0.1) until not localplr.Character or not localplr.Character:FindFirstChildWhichIsA("Humanoid") or localplr.Character:FindFirstChildWhichIsA("Humanoid").Health <= 0
                         newChar = localplr.CharacterAdded:Wait()
                         task.wait(2)
+                    else
+                        task.wait(2)
+
+                        if allowanceValue.Value == 0 then
+                            clickAllowanceOnce()
+                            task.wait(1)
+                        end
                     end
 
                     if attempts > 5 then
@@ -473,7 +451,6 @@ if allowanceValue then
     end)
 end
 
--- Webhook setup (your existing one)
 _G.EmbedColor = 7903521
 _G.BasicStyling = false
 getgenv().hook = "https://discord.com/api/webhooks/1534301369656283168/JjwLUv2H59RIXKVSLOQNcMGUW6FljFUit309ENKx-9R7Xsu8w6Mps5LPM3DKC3yPWxyk"
