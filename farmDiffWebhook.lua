@@ -135,7 +135,7 @@ end
 -- in the console. Set _G.DebugEnabled = false to silence it without
 -- removing calls.
 _G.DebugEnabled = true
-local function dprint(...)
+local function print(...)
     if not _G.DebugEnabled then return end
     local parts = {...}
     for i, v in ipairs(parts) do
@@ -149,21 +149,21 @@ local allowanceValue = nil
 -- NEW: centralized so it can be re-resolved after character/data resets
 local function refreshAllowanceValue()
     if not replicatedStorage then
-        dprint("refreshAllowanceValue: replicatedStorage is nil")
+        print("refreshAllowanceValue: replicatedStorage is nil")
         return
     end
     local playerDB = replicatedStorage:FindFirstChild("PlayerbaseData2")
     if not playerDB then
-        dprint("refreshAllowanceValue: PlayerbaseData2 not found")
+        print("refreshAllowanceValue: PlayerbaseData2 not found")
         return
     end
     local playerData = playerDB:FindFirstChild(localplr.Name)
     if not playerData then
-        dprint("refreshAllowanceValue: playerData not found for", localplr.Name)
+        print("refreshAllowanceValue: playerData not found for", localplr.Name)
         return
     end
     allowanceValue = playerData:FindFirstChild("NextAllowance")
-    dprint("refreshAllowanceValue: NextAllowance =", allowanceValue and allowanceValue.Value or "nil")
+    print("refreshAllowanceValue: NextAllowance =", allowanceValue and allowanceValue.Value or "nil")
 end
 
 refreshAllowanceValue()
@@ -229,14 +229,14 @@ local function getVisibleClaimButton(timeout)
         local button = claimButtonHolder and claimButtonHolder:FindFirstChild("TextButton")
 
         if innerFrame and innerFrame.Visible and button then
-            dprint("getVisibleClaimButton: found visible button")
+            print("getVisibleClaimButton: found visible button")
             return button
         end
 
         task.wait(0.1)
     end
 
-    dprint("getVisibleClaimButton: timed out after", timeout, "-- coreGui/frame/button not visible in time")
+    print("getVisibleClaimButton: timed out after", timeout, "-- coreGui/frame/button not visible in time")
     return nil
 end
 
@@ -244,22 +244,22 @@ end
 -- (nudging it open with a real interact press if it isn't), and only then
 -- fires the button. Returns false if the GUI never opened.
 local function clickAllowanceOnce()
-    dprint("clickAllowanceOnce: looking for claim button")
+    print("clickAllowanceOnce: looking for claim button")
     local button = getVisibleClaimButton(2)
 
     if not button then
-        dprint("clickAllowanceOnce: not visible yet, pressing E to open ATM prompt")
+        print("clickAllowanceOnce: not visible yet, pressing E to open ATM prompt")
         pressInteractOnce()
         button = getVisibleClaimButton(3)
     end
 
     if not button then
-        dprint("clickAllowanceOnce: gave up, button never became visible")
+        print("clickAllowanceOnce: gave up, button never became visible")
         return false
     end
 
     local fired = pcall(firesignal, button.MouseButton1Click)
-    dprint("clickAllowanceOnce: fired MouseButton1Click, success =", fired)
+    print("clickAllowanceOnce: fired MouseButton1Click, success =", fired)
     return fired == true
 end
 
@@ -267,13 +267,13 @@ end
 -- changed before reporting success. Pauses the background E-spam loop for
 -- the duration so it can't close the GUI mid-attempt.
 local function attemptClaimAndVerify()
-    dprint("attemptClaimAndVerify: starting, suppressing auto-interact")
+    print("attemptClaimAndVerify: starting, suppressing auto-interact")
     _G.SuppressAutoInteract = true
 
     local result = false
 
     for attempt = 1, 3 do
-        dprint("attemptClaimAndVerify: attempt", attempt)
+        print("attemptClaimAndVerify: attempt", attempt)
         local clicked = clickAllowanceOnce()
 
         if clicked then
@@ -281,11 +281,11 @@ local function attemptClaimAndVerify()
             refreshAllowanceValue()
 
             if allowanceValue and allowanceValue.Value > 0 then
-                dprint("attemptClaimAndVerify: value confirmed >0, claim verified on attempt", attempt)
+                print("attemptClaimAndVerify: value confirmed >0, claim verified on attempt", attempt)
                 result = true
                 break
             else
-                dprint("attemptClaimAndVerify: clicked but value still 0, will retry")
+                print("attemptClaimAndVerify: clicked but value still 0, will retry")
             end
         else
             _G.notify("> claim button not found/visible, retrying...", 2)
@@ -294,7 +294,7 @@ local function attemptClaimAndVerify()
         task.wait(0.5)
     end
 
-    dprint("attemptClaimAndVerify: finished, result =", result)
+    print("attemptClaimAndVerify: finished, result =", result)
     _G.SuppressAutoInteract = false
     return result
 end
@@ -314,7 +314,7 @@ local function checkAndHandleBlacklistedPosition()
     end
 
     while isPositionBlacklisted(rootPart.Position) do
-        dprint("checkAndHandleBlacklistedPosition: spawn is blacklisted at", rootPart.Position)
+        print("checkAndHandleBlacklistedPosition: spawn is blacklisted at", rootPart.Position)
         _G.notify("> bad spawn detected, resetting...", 2)
 
         reset()
@@ -337,10 +337,10 @@ local function checkAndHandleBlacklistedPosition()
 end
 
 local function startPathfinding()
-    dprint("startPathfinding: called")
+    print("startPathfinding: called")
 
     if not checkAndHandleBlacklistedPosition() then
-        dprint("startPathfinding: aborting, blacklist check failed")
+        print("startPathfinding: aborting, blacklist check failed")
         return false
     end
 
@@ -349,7 +349,7 @@ local function startPathfinding()
     local rootPart = character:FindFirstChild('HumanoidRootPart') or character:FindFirstChild('Torso')
 
     if not rootPart or not humanoid then
-        dprint("startPathfinding: missing rootPart or humanoid")
+        print("startPathfinding: missing rootPart or humanoid")
         reset()
         _G.notify("> unexpected error occured", 3)
         return false
@@ -361,7 +361,7 @@ local function startPathfinding()
     end
 
     if not atmFolder then
-        dprint("startPathfinding: ATMz folder not found")
+        print("startPathfinding: ATMz folder not found")
         reset()
         return false
     end
@@ -388,17 +388,17 @@ local function startPathfinding()
     end
 
     if not nearestATM then
-        dprint("startPathfinding: nearestATM is nil out of", #atms, "candidates")
+        print("startPathfinding: nearestATM is nil out of", #atms, "candidates")
         reset()
         _G.notify("> failed finding nearest atm ", 3)
         return false
     end
 
     local distanceToATM = (rootPart.Position - nearestATM:GetPivot().Position).Magnitude
-    dprint("startPathfinding: nearest ATM at distance", distanceToATM)
+    print("startPathfinding: nearest ATM at distance", distanceToATM)
 
     if distanceToATM < 10 then
-        dprint("startPathfinding: already close enough, attempting claim directly")
+        print("startPathfinding: already close enough, attempting claim directly")
         task.wait(0.5)
 
         -- CHANGED: verify before declaring success; reset on failure
@@ -410,7 +410,7 @@ local function startPathfinding()
             end
             return true
         else
-            dprint("startPathfinding: claim failed on direct attempt")
+            print("startPathfinding: claim failed on direct attempt")
             _G.notify("> claim failed at ATM, resetting...", 3)
             reset()
             return false
@@ -432,11 +432,11 @@ local function startPathfinding()
         path:ComputeAsync(rootPart.Position, targetPosition)
     end)
 
-    dprint("startPathfinding: ComputeAsync success =", success, "status =", success and tostring(path.Status) or tostring(errorMessage))
+    print("startPathfinding: ComputeAsync success =", success, "status =", success and tostring(path.Status) or tostring(errorMessage))
 
     if success and path.Status == Enum.PathStatus.Success then
         local waypoints = path:GetWaypoints()
-        dprint("startPathfinding: got", #waypoints, "waypoints")
+        print("startPathfinding: got", #waypoints, "waypoints")
 
         local currentWaypointIndex = 1
         local lastPosition = rootPart.Position
@@ -478,7 +478,7 @@ local function startPathfinding()
 
                 if stuckCheckTimer >= 0.7 then
                     if isPlayerStuck(rootPart, lastPosition, 0.5) then
-                        dprint("startPathfinding: stuck at waypoint", currentWaypointIndex, "of", #waypoints)
+                        print("startPathfinding: stuck at waypoint", currentWaypointIndex, "of", #waypoints)
                         if currentAnim then
                             currentAnim:Stop()
                         end
@@ -507,10 +507,10 @@ local function startPathfinding()
 
         task.wait(0.5)
         local finalDistance = (rootPart.Position - nearestATM:GetPivot().Position).Magnitude
-        dprint("startPathfinding: reached end of waypoints, finalDistance =", finalDistance)
+        print("startPathfinding: reached end of waypoints, finalDistance =", finalDistance)
 
         if finalDistance > 15 then
-            dprint("startPathfinding: finalDistance too far, treating as failure")
+            print("startPathfinding: finalDistance too far, treating as failure")
             if currentAnim then
                 currentAnim:Stop()
             end
@@ -533,13 +533,13 @@ local function startPathfinding()
             end
             return true
         else
-            dprint("startPathfinding: claim failed after walking to ATM")
+            print("startPathfinding: claim failed after walking to ATM")
             _G.notify("> claim failed at ATM, resetting...", 3)
             reset()
             return false
         end
     else
-        dprint("startPathfinding: pathfinding failed, success =", success, "status =", success and tostring(path.Status) or "n/a")
+        print("startPathfinding: pathfinding failed, success =", success, "status =", success and tostring(path.Status) or "n/a")
         if currentAnim then
             currentAnim:Stop()
         end
@@ -558,7 +558,7 @@ if allowanceValue then
 
             if allowanceValue.Value == 0 and not isProcessing then
                 isProcessing = true
-                dprint("main loop: allowanceValue is 0, starting collection process")
+                print("main loop: allowanceValue is 0, starting collection process")
                 reset()
                 _G.notify("> starting allowance collection process $.$", 3)
 
@@ -574,10 +574,10 @@ if allowanceValue then
                 local attempts = 0
                 while allowanceValue.Value == 0 do
                     attempts = attempts + 1
-                    dprint("main loop: pathfinding attempt", attempts)
+                    print("main loop: pathfinding attempt", attempts)
 
                     local pathSuccess = startPathfinding()
-                    dprint("main loop: startPathfinding returned", pathSuccess)
+                    print("main loop: startPathfinding returned", pathSuccess)
 
                     if not pathSuccess then
                         reset()
@@ -592,13 +592,13 @@ if allowanceValue then
                     end
 
                     if attempts > 5 then
-                        dprint("main loop: hit attempt cap, cooling down 5s")
+                        print("main loop: hit attempt cap, cooling down 5s")
                         task.wait(5)
                         attempts = 0
                     end
                 end
 
-                dprint("main loop: allowanceValue.Value > 0, collection complete")
+                print("main loop: allowanceValue.Value > 0, collection complete")
                 isProcessing = false
             end
         end
